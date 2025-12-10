@@ -11,6 +11,7 @@ yarn.lock
 dist/
 build/
 out/
+bin/
 
 # Environment variables
 .env
@@ -34,3 +35,4 @@ coverage/
 tmp/
 temp/
 *.tmp
+/sitless/bin/

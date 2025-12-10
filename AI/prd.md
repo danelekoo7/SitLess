@@ -7,7 +7,7 @@ Aplikacja działa w tle, monitorując liczbę kroków w zadanym oknie czasowym (
 
 **Model biznesowy:** Free (darmowa).
 **Platformy:** Zegarki Garmin z obsługą Connect IQ (ekrany MIP oraz AMOLED).
-**Język MVP:** Angielski.
+**Języki MVP:** Angielski (EN) i Polski (PL).
 
 ## 2. Problem użytkownika
 Współczesna praca biurowa oraz styl życia sprzyjają długotrwałemu przesiadywaniu, co negatywnie wpływa na zdrowie (bóle kręgosłupa, ryzyko chorób sercowo-naczyniowych).
