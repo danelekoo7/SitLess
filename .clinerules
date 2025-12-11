@@ -1,0 +1,150 @@
+# SitLess - Garmin Connect IQ Widget
+# Reguły dla Cline AI Assistant
+
+## Opis projektu
+SitLess to widget dla zegarków Garmin z obsługą Glance View. Główny cel to przypominanie o ruchu przeciwdziałając siedzącemu trybowi życia. Aplikacja monitoruje kroki w oknie kroczącym i wysyła wibracyjne powiadomienia.
+
+## Stack technologiczny
+- **Język:** Monkey C (Connect IQ SDK)
+- **Platforma:** Garmin Connect IQ (API Level 3.2.0+)
+- **Typ aplikacji:** Widget z Background Service i Glance View
+- **Ekrany:** MIP oraz AMOLED
+
+## Struktura projektu
+```
+sitless/
+├── manifest.xml          # Konfiguracja aplikacji, uprawnienia, obsługiwane urządzenia
+├── monkey.jungle         # Plik konfiguracji buildu
+├── resources/
+│   ├── drawables/        # Grafiki, ikony
+│   ├── layouts/          # Layouty XML dla UI
+│   └── strings/          # Tłumaczenia (EN, PL)
+└── source/
+    ├── sitlessApp.mc     # Główna klasa aplikacji
+    └── sitlessView.mc    # Widok widgetu
+```
+
+## Kluczowe moduły Toybox API
+Przy implementacji używaj następujących modułów:
+
+### Obowiązkowe
+- `Toybox.Application` - Zarządzanie cyklem życia aplikacji
+- `Toybox.WatchUi` - Interfejs użytkownika (View, Glance, InputDelegate)
+- `Toybox.Background` - Usługi w tle (ServiceDelegate)
+- `Toybox.ActivityMonitor` - Odczyt kroków (ActivityMonitor.getInfo())
+- `Toybox.System` - Status systemu (DeviceSettings, ClockTime)
+- `Toybox.Attention` - Wibracje i powiadomienia
+- `Toybox.Application.Properties` - Ustawienia aplikacji
+
+### Pomocnicze
+- `Toybox.Time` - Operacje na czasie
+- `Toybox.Timer` - Timery
+- `Toybox.Graphics` - Rysowanie na ekranie
+- `Toybox.Lang` - Typy podstawowe
+
+## Konwencje kodowania Monkey C
+
+### Nazewnictwo
+- Klasy: PascalCase (np. `SitlessApp`, `StepMonitorService`)
+- Funkcje: camelCase (np. `getStepCount`, `onUpdate`)
+- Zmienne: camelCase z prefiksem typu dla pól klasy (np. `_stepBuffer`, `mSettings`)
+- Stałe: SCREAMING_SNAKE_CASE (np. `DEFAULT_STEP_GOAL`, `TIME_WINDOW_MINUTES`)
+
+### Typowanie
+- Zawsze używaj typów (Monkey C jest statycznie typowany)
+- Używaj `as` do castowania i deklaracji typów
+- Sprawdzaj null z operatorem `instanceof` lub `!= null`
+
+### Przykład deklaracji:
+```monkeyc
+import Toybox.Lang;
+import Toybox.WatchUi;
+
+class SitlessView extends WatchUi.View {
+    private var _stepCount as Number = 0;
+    private var _lastUpdate as Time.Moment?;
+    
+    function initialize() {
+        View.initialize();
+    }
+    
+    function onUpdate(dc as Graphics.Dc) as Void {
+        View.onUpdate(dc);
+        // kod...
+    }
+}
+```
+
+## Wymagania funkcjonalne (z PRD)
+
+### Background Service
+- Uruchamiany co ~5 minut przez system
+- Bufor danych kroków dla okna kroczącego (60 min domyślnie)
+- Używaj `Application.Storage` dla persystencji między wywołaniami
+
+### Ustawienia (przez Garmin Connect Mobile)
+- `minSteps` - minimalna liczba kroków (domyślnie: 50)
+- `timeWindow` - okno czasowe w minutach (domyślnie: 60)
+- `startTime` - godzina startu (domyślnie: 07:00)
+- `endTime` - godzina końca (domyślnie: 21:00)
+
+### Logika wykluczeń powiadomień
+Powiadomienie NIE może być wysłane gdy:
+1. Tryb DND jest włączony (`System.getDeviceSettings().doNotDisturb`)
+2. Użytkownik śpi (Sleep Mode)
+3. Trwa aktywność sportowa (`ActivityMonitor.getInfo().activityClass`)
+4. Zegarek nie jest na nadgarstku
+
+### UI Requirements
+- Glance View: Prosty postęp w aktualnym oknie
+- Widget View: Pełna wizualizacja z paskiem/okręgiem postępu
+- Ciemny motyw
+- Obsługa tylko przyciskami (bez dotyku)
+
+## Uprawnienia (manifest.xml)
+Aplikacja potrzebuje następujących uprawnień:
+```xml
+<iq:permissions>
+    <iq:uses-permission id="Background"/>
+    <iq:uses-permission id="FitContributor"/>
+</iq:permissions>
+```
+
+## Dobre praktyki Connect IQ
+
+### Zarządzanie pamięcią
+- Urządzenia mają ograniczoną pamięć (16-128KB)
+- Unikaj dużych tablic i obiektów
+- Zwalniaj zasoby w `onHide()` i `onStop()`
+
+### Oszczędzanie baterii
+- Minimalizuj częstotliwość aktualizacji UI
+- Używaj `WatchUi.requestUpdate()` tylko gdy potrzebne
+- Background service powinien być lekki i szybki
+
+### Kompatybilność ekranów
+- Używaj relatywnych pozycji (procenty, nie piksele stałe)
+- Testuj na MIP (Fenix) i AMOLED (Epix/Venu)
+- Implementuj ochronę przed wypaleniem AMOLED
+
+### Obsługa błędów
+- Zawsze sprawdzaj null przed dostępem
+- Używaj try/catch dla operacji I/O
+- Loguj błędy przez `System.println()` w trybie debug
+
+## Testowanie
+- Używaj symulatora Connect IQ SDK
+- Testuj na różnych rozdzielczościach
+- Sprawdzaj zużycie pamięci w Device Simulator
+
+## Pliki do utworzenia (TODO)
+1. `source/SitlessServiceDelegate.mc` - Background service
+2. `source/SitlessGlanceView.mc` - Glance view
+3. `source/SitlessSettingsDelegate.mc` - Obsługa ustawień
+4. `source/StepBuffer.mc` - Bufor kroków dla okna kroczącego
+5. `resources/settings/settings.xml` - Definicja ustawień
+
+## Przydatne linki
+- API Docs: https://developer.garmin.com/connect-iq/api-docs/
+- Programmer's Guide: https://developer.garmin.com/connect-iq/programmers-guide/
+- Core Topics: https://developer.garmin.com/connect-iq/core-topics/
