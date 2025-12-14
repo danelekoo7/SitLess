@@ -242,10 +242,19 @@ function onUpdate(dc as Dc) as Void {
 1. `StepBuffer` używa `timeWindow` z ustawień
 2. Progress bar używa `minSteps` z ustawień
 3. (Przygotowanie) Logika sprawdza `startHour`/`endHour`
+4. **WAŻNE: Dynamiczny rozmiar bufora** - przy zmianie `timeWindow` należy przeliczyć `maxSamples` w StepBuffer:
+   ```monkeyc
+   // Wzór: (timeWindow / interval) + margines
+   // Przykład: timeWindow=120min, interval=5min
+   // maxSamples = (120 / 5) + 3 = 27
+   maxSamples = (timeWindow / 5) + 3;
+   ```
+   Aktualnie bufor ma stały rozmiar 15 próbek (~75min). Dla okien >75min trzeba zwiększyć rozmiar bufora.
 
 **Test weryfikacyjny:**
 - [ ] Zmiana `minSteps` zmienia wypełnienie paska
 - [ ] Zmiana `timeWindow` wpływa na obliczenia
+- [ ] Bufor ma wystarczający rozmiar dla ustawionego `timeWindow`
 
 ---
 
