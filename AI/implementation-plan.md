@@ -24,17 +24,18 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 - [ ] Aplikacja uruchamia się w symulatorze
 - [ ] Widzisz ikonę małpki na ekranie
 
-### Krok 0.2: Dodanie wymaganych uprawnień
+### Krok 0.2: Dodanie wymaganych uprawnień ✅ UKOŃCZONE
 **Cel:** Skonfigurować manifest.xml z niezbędnymi uprawnieniami
 
 **Zadania:**
 1. Użyj `Monkey C: Edit Permissions` w VS Code
 2. Dodaj uprawnienie `Background` (dla usługi w tle)
-3. Dodaj uprawnienie `FitContributor` (dla dostępu do kroków - wymagane przez ActivityMonitor)
+
+**UWAGA:** `FitContributor` NIE jest wymagane dla odczytu kroków. To uprawnienie służy do *zapisywania* danych do plików FIT, nie do odczytu. Moduł `ActivityMonitor` nie wymaga żadnych specjalnych uprawnień - jest dostępny bezpośrednio jako część API Connect IQ.
 
 **Test weryfikacyjny:**
-- [ ] `manifest.xml` zawiera sekcję `<iq:permissions>` z obydwoma uprawnieniami
-- [ ] Aplikacja nadal się kompiluje
+- [x] `manifest.xml` zawiera sekcję `<iq:permissions>` z uprawnieniem `Background`
+- [x] Aplikacja nadal się kompiluje
 
 ---
 

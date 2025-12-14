@@ -37,3 +37,11 @@ temp/
 *.tmp
 /sitless/bin/
 sitless/.claude/settings.local.json
+sitless/source/SitLessApp.prg
+sitless/source/SitLessApp.prg.debug.xml
+sitless/source/gen/006-B3992-00/source/Rez.mcgen
+sitless/source/gen/resources/cache/i1c278179.mbc
+sitless/source/gen/resources/cache/i3c31523e.mbc
+sitless/source/internal-mir/Rez.mir
+sitless/source/mir/source/sitlessApp.mir
+sitless/source/mir/source/sitlessView.mir

@@ -257,13 +257,13 @@ The manifest.xml must include:
 ```xml
 <iq:permissions>
     <iq:uses-permission id="Background"/>
-    <iq:uses-permission id="FitContributor"/>
 </iq:permissions>
 ```
 
 **Why these permissions:**
 - `Background` - Allows periodic background service for step monitoring
-- `FitContributor` - Enables reading activity monitor data (step counts)
+
+**Note:** `ActivityMonitor` API does not require any special permissions - it's available directly as part of the Connect IQ API. The `FitContributor` permission is only needed for *writing* data to FIT files, not for reading step counts.
 
 ## Device Support
 
