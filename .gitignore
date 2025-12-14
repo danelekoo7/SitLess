@@ -36,3 +36,4 @@ tmp/
 temp/
 *.tmp
 /sitless/bin/
+sitless/.claude/settings.local.json
