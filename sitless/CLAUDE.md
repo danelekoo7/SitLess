@@ -102,6 +102,11 @@ Access via `Toybox.Application.Properties`
 
 ## Monkey C Coding Conventions
 
+### Language
+- **All source code files (*.mc) must be in English** - variable names, function names, comments
+- Documentation files (*.md) in the AI/ folder can be in Polish
+- User-facing strings in resources/strings/ are localized (EN, PL)
+
 ### Naming
 - Classes: PascalCase (e.g., `SitlessApp`, `StepMonitorService`)
 - Functions: camelCase (e.g., `getStepCount`, `onUpdate`)

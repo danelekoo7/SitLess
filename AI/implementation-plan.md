@@ -41,64 +41,23 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ## Faza 1: Wyświetlanie aktualnej liczby kroków (pierwszy milestone)
 
-### Krok 1.1: Odczyt całkowitej liczby kroków z ActivityMonitor
-**Cel:** Nauczyć się korzystać z API ActivityMonitor i wyświetlić dane
+### Krok 1.1 + 1.2: Odczyt kroków i custom drawing ✅ UKOŃCZONE
+**Cel:** Wyświetlić liczbę kroków z ActivityMonitor na czarnym tle
 
 **Plik:** `source/sitlessView.mc`
 
-**Zadania:**
-1. Dodaj import `Toybox.ActivityMonitor`
-2. W funkcji `onUpdate()` pobierz dane z `ActivityMonitor.getInfo()`
-3. Wyświetl liczbę kroków dziennych na ekranie (tekst)
+**Co zostało zrobione:**
+1. Dodano import `Toybox.ActivityMonitor`
+2. Usunięto `setLayout()` - rysujemy bezpośrednio na `dc`
+3. Czarne tło (oszczędność baterii AMOLED)
+4. Wyświetlanie kroków dziennych
 
-**Kod koncepcyjny:**
-```monkeyc
-import Toybox.ActivityMonitor;
-
-function onUpdate(dc as Dc) as Void {
-    View.onUpdate(dc);
-
-    var info = ActivityMonitor.getInfo();
-    var steps = 0;
-    if (info != null && info.steps != null) {
-        steps = info.steps;
-    }
-
-    dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-    dc.drawText(
-        dc.getWidth() / 2,
-        dc.getHeight() / 2,
-        Graphics.FONT_MEDIUM,
-        "Steps: " + steps,
-        Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-    );
-}
-```
+**UWAGA - Symulator:** Symulator Connect IQ nie przekazuje poprawnie wartości kroków do ActivityMonitor dla widgetów (zawsze pokazuje 0). Testowanie na prawdziwym urządzeniu (FR 255) potwierdza, że kod działa poprawnie.
 
 **Test weryfikacyjny:**
-- [ ] Aplikacja wyświetla "Steps: X" gdzie X to liczba kroków
-- [ ] W symulatorze: Simulation → Activity Data → ustaw kroki → wartość się aktualizuje
-
-**Nauka:**
-- Jak działa `ActivityMonitor.getInfo()`
-- Jak rysować tekst bezpośrednio na `dc` (Device Context)
-- Null-checking w Monkey C
-
-### Krok 1.2: Usunięcie domyślnego layoutu i przejście na custom drawing
-**Cel:** Pełna kontrola nad rysowaniem UI
-
-**Pliki:**
-- `source/sitlessView.mc`
-- `resources/layouts/layout.xml`
-
-**Zadania:**
-1. Usuń `setLayout()` z `onLayout()` lub ustaw pusty layout
-2. Wyczyść ekran przed rysowaniem w `onUpdate()`
-3. Dodaj czyszczenie tła (czarny kolor dla oszczędności baterii AMOLED)
-
-**Test weryfikacyjny:**
-- [ ] Ekran pokazuje tylko tekst z krokami na czarnym tle
-- [ ] Nie ma już obrazka małpki
+- [x] Aplikacja wyświetla "Steps: X" gdzie X to liczba kroków
+- [x] Na prawdziwym urządzeniu (FR 255) wartość jest poprawna
+- [x] Czarne tło, biały tekst
 
 ### Krok 1.3: Implementacja bufora kroków - struktura danych
 **Cel:** Przygotować mechanizm śledzenia kroków w oknie czasowym
