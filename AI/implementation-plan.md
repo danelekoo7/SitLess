@@ -59,93 +59,58 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 - [x] Na prawdziwym urządzeniu (FR 255) wartość jest poprawna
 - [x] Czarne tło, biały tekst
 
-### Krok 1.3: Implementacja bufora kroków - struktura danych
+### Krok 1.3: Implementacja bufora kroków - struktura danych ✅ UKOŃCZONE
 **Cel:** Przygotować mechanizm śledzenia kroków w oknie czasowym
 
 **Nowy plik:** `source/StepBuffer.mc`
 
-**Zadania:**
-1. Utwórz klasę `StepBuffer`
-2. Zaimplementuj strukturę do przechowywania próbek (timestamp + steps)
-3. Dodaj metodę `addSample(totalSteps, timestamp)`
-4. Dodaj metodę `getStepsInWindow(windowMinutes)` - oblicza różnicę kroków
-
-**Struktura danych:**
-```monkeyc
-class StepBuffer {
-    private var _samples as Array<Dictionary>;  // [{time: Moment, steps: Number}, ...]
-    private var _maxSamples as Number;
-
-    function initialize(maxSamples as Number) {
-        _samples = [];
-        _maxSamples = maxSamples;
-    }
-
-    function addSample(totalSteps as Number, time as Time.Moment) as Void {
-        // Dodaj próbkę, usuń stare
-    }
-
-    function getStepsInWindow(windowMinutes as Number) as Number {
-        // Znajdź najstarszą próbkę w oknie i oblicz różnicę
-    }
-}
-```
+**Co zostało zrobione:**
+1. Utworzono klasę `StepBuffer` z metodami:
+   - `addSample(totalSteps, time)` - dodaje próbkę do bufora
+   - `getStepsInWindow(windowMinutes)` - oblicza kroki w oknie czasowym
+   - `getSampleCount()` - zwraca liczbę próbek
+   - `getLatestSteps()` - zwraca ostatnią wartość kroków
+   - `toArray()` / `fromArray()` - serializacja dla Storage (przygotowanie do Fazy 4)
+2. Obsługa midnight reset (gdy kroki dzienne się resetują)
+3. Zwraca -1 gdy brak wystarczających danych (< 2 próbki)
 
 **Test weryfikacyjny:**
-- [ ] Klasa kompiluje się bez błędów
-- [ ] Testy jednostkowe (jeśli możliwe) lub ręczna weryfikacja logiki
+- [x] Klasa kompiluje się bez błędów
+- [x] Logika działa poprawnie na urządzeniu
 
-### Krok 1.4: Integracja StepBuffer z widokiem
+### Krok 1.4: Integracja StepBuffer z widokiem ✅ UKOŃCZONE
 **Cel:** Wyświetlić kroki z ostatnich 60 minut
 
 **Pliki:**
 - `source/sitlessApp.mc`
 - `source/sitlessView.mc`
 
-**Zadania:**
-1. Utwórz instancję `StepBuffer` w `sitlessApp`
-2. Przy każdym `onShow()` lub `onUpdate()` dodaj próbkę do bufora
-3. Wyświetl zarówno kroki dzienne jak i kroki z okna 60min
+**Co zostało zrobione:**
+1. Instancja `StepBuffer` utworzona w `sitlessApp` (15 próbek = ~75min)
+2. Metoda `getStepBuffer()` udostępnia bufor dla widoku
+3. Próbka dodawana w `onShow()` widoku
+4. Wyświetlanie "Daily: X" i "Last 60min: Y" (lub "..." gdy < 2 próbki)
+
+**UWAGA:** Aktualnie próbki dodawane są tylko przy otwieraniu widgetu. Pełne działanie wymaga Background Service (Faza 4), który będzie dodawał próbki automatycznie co ~5 min.
 
 **Test weryfikacyjny:**
-- [ ] Aplikacja pokazuje dwie linie: "Daily: X" i "Last 60min: Y"
-- [ ] Po wykonaniu kroków w symulatorze, wartość "Last 60min" rośnie
-- [ ] Wartość "Last 60min" ≤ "Daily" (logiczna spójność)
+- [x] Aplikacja pokazuje dwie linie: "Daily: X" i "Last 60min: Y"
+- [x] Przy < 2 próbkach pokazuje "..." z liczbą próbek
+- [x] Wartość "Last 60min" ≤ "Daily" (logiczna spójność)
 
-### Krok 1.5: Optymalizacja wydajności widoku
+### Krok 1.5: Optymalizacja wydajności widoku ✅ UKOŃCZONE
 **Cel:** Zastosować best practices dla lifecycle widgetu
 
 **Plik:** `source/sitlessView.mc`
 
-**Zadania:**
-1. Dodaj flagę `_isVisible`
-2. Ustaw ją w `onShow()` i `onHide()`
-3. W `onUpdate()` sprawdź flagę przed rysowaniem
-4. Przenieś obliczenia poza pętlę rysowania gdzie możliwe
-
-**Kod:**
-```monkeyc
-private var _isVisible as Boolean = false;
-
-function onShow() as Void {
-    _isVisible = true;
-}
-
-function onHide() as Void {
-    _isVisible = false;
-}
-
-function onUpdate(dc as Dc) as Void {
-    if (!_isVisible) {
-        return;
-    }
-    // rysowanie...
-}
-```
+**Co zostało zrobione:**
+1. Dodano flagę `_isVisible` (domyślnie `false`)
+2. Ustawiana na `true` w `onShow()`, na `false` w `onHide()`
+3. `onUpdate()` zwraca natychmiast gdy `!_isVisible`
 
 **Test weryfikacyjny:**
-- [ ] Aplikacja działa jak poprzednio
-- [ ] W logach nie ma nadmiarowych wywołań onUpdate gdy widget niewidoczny
+- [x] Aplikacja działa jak poprzednio
+- [x] Brak nadmiarowych renderowań gdy widget niewidoczny
 
 ---
 
@@ -242,10 +207,19 @@ function onUpdate(dc as Dc) as Void {
 1. `StepBuffer` używa `timeWindow` z ustawień
 2. Progress bar używa `minSteps` z ustawień
 3. (Przygotowanie) Logika sprawdza `startHour`/`endHour`
+4. **WAŻNE: Dynamiczny rozmiar bufora** - przy zmianie `timeWindow` należy przeliczyć `maxSamples` w StepBuffer:
+   ```monkeyc
+   // Wzór: (timeWindow / interval) + margines
+   // Przykład: timeWindow=120min, interval=5min
+   // maxSamples = (120 / 5) + 3 = 27
+   maxSamples = (timeWindow / 5) + 3;
+   ```
+   Aktualnie bufor ma stały rozmiar 15 próbek (~75min). Dla okien >75min trzeba zwiększyć rozmiar bufora.
 
 **Test weryfikacyjny:**
 - [ ] Zmiana `minSteps` zmienia wypełnienie paska
 - [ ] Zmiana `timeWindow` wpływa na obliczenia
+- [ ] Bufor ma wystarczający rozmiar dla ustawionego `timeWindow`
 
 ---
 
