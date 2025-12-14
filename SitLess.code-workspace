@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "sitless",
+			"name": "SitLess App"
+		},
+		{
+			"path": ".",
+			"name": "Project Root"
+		}
+	],
+	"settings": {
+		"monkeyC.typeCheckLevel": "Informative"
+	}
+}
