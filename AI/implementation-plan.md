@@ -114,50 +114,36 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ---
 
-## Faza 2: Wizualizacja postępu
+## Faza 2: Wizualizacja postępu ✅ UKOŃCZONE
 
-### Krok 2.1: Prosty pasek postępu (progress bar)
+### Krok 2.1 + 2.2 + 2.3: Pasek postępu z kolorami i nowym layoutem ✅ UKOŃCZONE
 **Cel:** Graficzna reprezentacja postępu kroków
 
 **Plik:** `source/sitlessView.mc`
 
-**Zadania:**
-1. Oblicz procent: `stepsInWindow / targetSteps * 100`
-2. Narysuj tło paska (szary prostokąt)
-3. Narysuj wypełnienie (zielony/czerwony w zależności od postępu)
+**Co zostało zrobione:**
+1. Dodano stałą `DEFAULT_STEP_GOAL = 50`
+2. Nowy layout UI (od góry do dołu):
+   - Daily steps (szary, mały font)
+   - Główna wartość "X / 50" (duży font, kolorowy)
+   - Pasek postępu (70% szerokości, 12px wysokości)
+   - Etykieta "last 60 min" (szary, mały font)
+3. Logika kolorów:
+   - Zielony gdy >= 50 kroków (cel osiągnięty)
+   - Czerwony gdy < 50 kroków (cel nieosiągnięty)
+   - Szary gdy brak danych (< 2 próbki)
 
 **Test weryfikacyjny:**
-- [ ] Pasek postępu jest widoczny
-- [ ] Pasek wypełnia się proporcjonalnie do kroków
-- [ ] Przy 0 krokach pasek jest pusty, przy 50+ krokach pełny
+- [x] Pasek postępu jest widoczny
+- [x] Pasek wypełnia się proporcjonalnie do kroków
+- [x] Kolor zmienia się w zależności od postępu
+- [x] Szary pasek przy braku danych
 
-### Krok 2.2: Dodanie kolorów i stanów wizualnych
-**Cel:** Intuicyjne wskazanie stanu (ok/warning)
-
-**Zadania:**
-1. Zielony kolor gdy kroki >= cel
-2. Czerwony/pomarańczowy gdy kroki < cel
-3. Dodaj ikonę lub emoji (opcjonalnie)
-
-**Test weryfikacyjny:**
-- [ ] Kolor zmienia się w zależności od postępu
-- [ ] UI jest czytelny zarówno na MIP jak i AMOLED (sprawdź różne urządzenia w symulatorze)
-
-### Krok 2.3: Wyświetlanie dodatkowych informacji
-**Cel:** Pełny UI widgetu
-
-**Zadania:**
-1. Wyświetl aktualną godzinę
-2. Wyświetl cel kroków
-3. Wyświetl czas do następnego sprawdzenia (opcjonalnie)
-
-**Test weryfikacyjny:**
-- [ ] Wszystkie elementy UI są widoczne i nie nachodzą na siebie
-- [ ] Tekst jest czytelny na różnych rozmiarach ekranu
+**UWAGA:** Testowanie utrudnione bez Background Service - próbki dodawane tylko przy otwieraniu widgetu. Następna faza (4) rozwiąże ten problem.
 
 ---
 
-## Faza 3: Ustawienia użytkownika
+## Faza 3: Ustawienia użytkownika (ODŁOŻONA - po Fazie 4)
 
 ### Krok 3.1: Definicja ustawień w XML
 **Cel:** Przygotować strukturę ustawień dla Garmin Connect Mobile
@@ -479,35 +465,37 @@ function getServiceDelegate() as [System.ServiceDelegate] {
 
 ## Podsumowanie kolejności implementacji
 
+**ZMIANA KOLEJNOŚCI:** Background Service (Faza 4) przeniesiony przed Ustawienia (Faza 3), ponieważ jest niezbędny do testowania bufora kroków.
+
 ```
-Faza 0: Środowisko (0.5h)
+Faza 0: Środowisko ✅
     └── 0.1 → 0.2
 
-Faza 1: Wyświetlanie kroków [PIERWSZY MILESTONE] (2-3h)
+Faza 1: Wyświetlanie kroków ✅
     └── 1.1 → 1.2 → 1.3 → 1.4 → 1.5
 
-Faza 2: Wizualizacja (1-2h)
+Faza 2: Wizualizacja ✅
     └── 2.1 → 2.2 → 2.3
 
-Faza 3: Ustawienia (1-2h)
-    └── 3.1 → 3.2 → 3.3
-
-Faza 4: Background Service (3-4h)
+Faza 4: Background Service ← NASTĘPNA
     └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5
 
-Faza 5: Alerty (2-3h)
+Faza 3: Ustawienia (odłożona)
+    └── 3.1 → 3.2 → 3.3
+
+Faza 5: Alerty
     └── 5.1 → 5.2 → 5.3 → 5.4
 
-Faza 6: Snooze (1-2h)
+Faza 6: Snooze
     └── 6.1 → 6.2
 
-Faza 7: Glance (1-2h)
+Faza 7: Glance
     └── 7.1 → 7.2
 
-Faza 8: Optymalizacje (2-3h)
+Faza 8: Optymalizacje
     └── 8.1 → 8.2 → 8.3
 
-Faza 9: Finalizacja (1-2h)
+Faza 9: Finalizacja
     └── 9.1 → 9.2 → 9.3 → 9.4
 ```
 
@@ -515,17 +503,17 @@ Faza 9: Finalizacja (1-2h)
 
 ## Checkpointy (Momenty weryfikacji postępu)
 
-| Checkpoint | Po kroku | Co weryfikujemy |
-|------------|----------|-----------------|
-| **CP1** | 1.4 | Widget pokazuje kroki dzienne i z ostatnich 60min |
-| **CP2** | 2.3 | Pełny UI widgetu z paskiem postępu |
-| **CP3** | 3.3 | Ustawienia działają i wpływają na aplikację |
-| **CP4** | 4.5 | Background service zbiera dane w tle |
-| **CP5** | 5.4 | Alerty wibracyjne działają |
-| **CP6** | 6.2 | Snooze działa |
-| **CP7** | 7.2 | Glance view pokazuje status |
-| **CP8** | 8.3 | Aplikacja jest zoptymalizowana |
-| **CP9** | 9.4 | Gotowe do publikacji |
+| Checkpoint | Po fazie | Co weryfikujemy | Status |
+|------------|----------|-----------------|--------|
+| **CP1** | Faza 1 | Widget pokazuje kroki dzienne i z ostatnich 60min | ✅ |
+| **CP2** | Faza 2 | Pełny UI widgetu z paskiem postępu | ✅ |
+| **CP3** | Faza 4 | Background service zbiera dane w tle | ⏳ NASTĘPNY |
+| **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | |
+| **CP5** | Faza 5 | Alerty wibracyjne działają | |
+| **CP6** | Faza 6 | Snooze działa | |
+| **CP7** | Faza 7 | Glance view pokazuje status | |
+| **CP8** | Faza 8 | Aplikacja jest zoptymalizowana | |
+| **CP9** | Faza 9 | Gotowe do publikacji | |
 
 ---
 

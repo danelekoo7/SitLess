@@ -7,6 +7,8 @@ import Toybox.Lang;
 class sitlessView extends WatchUi.View {
     // Default time window in minutes
     private const DEFAULT_WINDOW_MINUTES = 60;
+    // Default step goal for the time window
+    private const DEFAULT_STEP_GOAL = 50;
 
     // Visibility flag for performance optimization
     private var _isVisible as Boolean = false;
@@ -46,30 +48,71 @@ class sitlessView extends WatchUi.View {
 
         var centerX = dc.getWidth() / 2;
         var centerY = dc.getHeight() / 2;
+        var screenWidth = dc.getWidth();
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        // Determine color based on goal progress
+        var hasData = windowSteps >= 0;
+        var goalMet = hasData && windowSteps >= DEFAULT_STEP_GOAL;
+        var progressColor = Graphics.COLOR_DK_GRAY;
+        if (hasData) {
+            progressColor = goalMet ? Graphics.COLOR_GREEN : Graphics.COLOR_RED;
+        }
 
-        // Show daily steps
+        // 1. Daily steps (top, small gray font)
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             centerX,
-            centerY - 30,
+            centerY - 50,
             Graphics.FONT_SMALL,
             "Daily: " + dailySteps,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
 
-        // Show window steps
-        var windowText = "Last 60min: ";
-        if (windowSteps < 0) {
-            windowText += "..." + " (" + sampleCount + ")";
-        } else {
-            windowText += windowSteps;
+        // 2. Main step count (center, large font, colored)
+        dc.setColor(progressColor, Graphics.COLOR_TRANSPARENT);
+        var mainText = hasData ? windowSteps + " / " + DEFAULT_STEP_GOAL : "...";
+        dc.drawText(
+            centerX,
+            centerY - 10,
+            Graphics.FONT_LARGE,
+            mainText,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
+
+        // 3. Progress bar (below center)
+        var barWidth = (screenWidth * 70) / 100;
+        var barHeight = 12;
+        var barX = (screenWidth - barWidth) / 2;
+        var barY = centerY + 20;
+
+        // Progress bar background (dark gray)
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_DK_GRAY);
+        dc.fillRectangle(barX, barY, barWidth, barHeight);
+
+        // Progress bar fill (colored based on status)
+        if (hasData) {
+            var progress = windowSteps.toFloat() / DEFAULT_STEP_GOAL.toFloat();
+            if (progress > 1.0) {
+                progress = 1.0;
+            }
+            var fillWidth = (barWidth * progress).toNumber();
+            if (fillWidth > 0) {
+                dc.setColor(progressColor, progressColor);
+                dc.fillRectangle(barX, barY, fillWidth, barHeight);
+            }
+        }
+
+        // 4. Label "last 60 min" (bottom, small gray font)
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        var labelText = "last " + DEFAULT_WINDOW_MINUTES + " min";
+        if (!hasData) {
+            labelText += " (" + sampleCount + " samples)";
         }
         dc.drawText(
             centerX,
-            centerY + 10,
-            Graphics.FONT_MEDIUM,
-            windowText,
+            centerY + 50,
+            Graphics.FONT_SMALL,
+            labelText,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }
