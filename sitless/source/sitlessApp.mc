@@ -1,19 +1,26 @@
 import Toybox.Application;
+import Toybox.Application.Storage;
+import Toybox.Background;
 import Toybox.Lang;
+import Toybox.Time;
 import Toybox.WatchUi;
+import Toybox.System;
 
+(:background)
 class sitlessApp extends Application.AppBase {
     // Step buffer instance shared across app
     // 15 samples = ~75 min coverage at 5min intervals
-    private var _stepBuffer as StepBuffer;
+    // Initialized lazily to avoid background context issues
+    private var _stepBuffer as StepBuffer?;
 
     function initialize() {
         AppBase.initialize();
-        _stepBuffer = new StepBuffer(15);
     }
 
-    // onStart() is called on application start up
+    // onStart() is called on application start up (both foreground AND background)
     function onStart(state as Dictionary?) as Void {
+        // Don't do anything here that requires foreground-only classes
+        // Background service will handle its own initialization
     }
 
     // onStop() is called when your application is exiting
@@ -21,13 +28,84 @@ class sitlessApp extends Application.AppBase {
     }
 
     // Return the initial view of your application here
+    // This is ONLY called for foreground app, never for background
+    (:typecheck(disableBackgroundCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        // Load step buffer from storage (persisted by background service)
+        loadStepBufferFromStorage();
+
+        // Register for next temporal event (background service)
+        registerNextTemporalEvent();
+
         return [ new sitlessView() ];
     }
 
-    // Get the step buffer instance
+    // Get the step buffer instance (creates lazily if needed)
+    (:typecheck(disableBackgroundCheck))
     function getStepBuffer() as StepBuffer {
-        return _stepBuffer;
+        if (_stepBuffer == null) {
+            _stepBuffer = new StepBuffer(15);
+        }
+        return _stepBuffer as StepBuffer;
+    }
+
+    // Return the service delegate for background processing
+    function getServiceDelegate() as [System.ServiceDelegate] {
+        return [new SitlessServiceDelegate()];
+    }
+
+    // Called when background service exits with data
+    (:typecheck(disableBackgroundCheck))
+    function onBackgroundData(data) as Void {
+        if (data != null && data instanceof Dictionary) {
+            var dict = data as Dictionary;
+            var stepsValue = dict["steps"] as Number;
+            System.println("SitLess: Received background data - steps=" + stepsValue.toString());
+            // Reload buffer from storage to get latest data
+            loadStepBufferFromStorage();
+            // Request UI update to show new data
+            WatchUi.requestUpdate();
+        }
+    }
+
+    // Register for next temporal event (5 minutes from now)
+    private function registerNextTemporalEvent() as Void {
+        var fiveMinutes = new Time.Duration(5 * 60);
+        var nextEvent = Time.now().add(fiveMinutes);
+        try {
+            Background.registerForTemporalEvent(nextEvent);
+            System.println("SitLess: Registered temporal event for 5 min");
+        } catch (e) {
+            System.println("SitLess: Failed to register temporal event");
+        }
+    }
+
+    // Load step buffer data from persistent storage
+    (:typecheck(disableBackgroundCheck))
+    private function loadStepBufferFromStorage() as Void {
+        // Ensure buffer exists
+        var buffer = getStepBuffer();
+
+        var storedData = Storage.getValue("stepBuffer");
+        if (storedData != null && storedData instanceof Array) {
+            var samples = storedData as Array<Dictionary>;
+            // Convert stored format (time as Number) to StepBuffer format (time as Moment)
+            var convertedSamples = [] as Array<Dictionary>;
+            for (var i = 0; i < samples.size(); i++) {
+                var sample = samples[i] as Dictionary;
+                var timeValue = sample["time"];
+                var steps = sample["steps"] as Number;
+
+                // Convert timestamp back to Moment
+                var timeMoment = new Time.Moment(timeValue as Number);
+                convertedSamples.add({
+                    "time" => timeMoment,
+                    "steps" => steps
+                } as Dictionary);
+            }
+            buffer.fromArray(convertedSamples);
+            System.println("SitLess: Loaded " + convertedSamples.size() + " samples from storage");
+        }
     }
 
 }
