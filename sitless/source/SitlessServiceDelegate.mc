@@ -54,6 +54,10 @@ class SitlessServiceDelegate extends System.ServiceDelegate {
         // Log for debugging (visible in simulator)
         System.println("SitLess BG: Added sample - steps=" + steps + ", samples=" + samples.size());
 
+        // CRITICAL: Register next temporal event BEFORE exiting
+        // Temporal events are one-shot - must re-register each time
+        registerNextTemporalEvent();
+
         // Exit and pass data to main app
         // Data will be delivered to onBackgroundData() if app is active
         var result = {
@@ -63,5 +67,18 @@ class SitlessServiceDelegate extends System.ServiceDelegate {
         } as Dictionary<Application.PropertyKeyType, Application.PropertyValueType>;
 
         Background.exit(result as Application.PersistableType);
+    }
+
+    // Register for next temporal event (5 minutes from now)
+    private function registerNextTemporalEvent() as Void {
+        // 5 minutes in seconds - minimum interval enforced by Connect IQ
+        var interval = new Time.Duration(5 * 60);
+        var nextEvent = Time.now().add(interval);
+        try {
+            Background.registerForTemporalEvent(nextEvent);
+            System.println("SitLess BG: Registered next event in 5 min");
+        } catch (e) {
+            System.println("SitLess BG: Failed to register next event");
+        }
     }
 }
