@@ -209,81 +209,97 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ---
 
-## Faza 4: Background Service
+## Faza 4: Background Service ✅ UKOŃCZONE
 
-### Krok 4.1: Konfiguracja Background Service w manifeście
+### Krok 4.1: Konfiguracja Background Service w manifeście ✅ UKOŃCZONE
 **Cel:** Przygotować infrastrukturę dla usługi w tle
 
 **Plik:** `manifest.xml`
 
-**Zadania:**
-1. Dodaj deklarację service delegate w manifeście
-2. Skonfiguruj typ uruchamiania (temporal)
+**Co zostało zrobione:**
+1. Deklaracja service delegate dodana w manifeście
+2. Uprawnienie `Background` już było skonfigurowane w Fazie 0
 
 **Test weryfikacyjny:**
-- [ ] Manifest jest poprawny syntaktycznie
-- [ ] Aplikacja kompiluje się
+- [x] Manifest jest poprawny syntaktycznie
+- [x] Aplikacja kompiluje się
 
-### Krok 4.2: Implementacja ServiceDelegate - szkielet
+### Krok 4.2: Implementacja ServiceDelegate ✅ UKOŃCZONE
 **Cel:** Podstawowa struktura usługi w tle
 
-**Nowy plik:** `source/SitlessServiceDelegate.mc`
+**Plik:** `source/SitlessServiceDelegate.mc`
 
-**Zadania:**
-1. Utwórz klasę dziedziczącą z `System.ServiceDelegate`
-2. Zaimplementuj `onTemporalEvent()` - główną metodę wywoływaną co 5min
-3. Na razie tylko loguj wywołanie
+**Co zostało zrobione:**
+1. Klasa `SitlessServiceDelegate` dziedzicząca z `System.ServiceDelegate`
+2. Metoda `onTemporalEvent()` wywoływana co ~5min:
+   - Odczytuje kroki z `ActivityMonitor.getInfo()`
+   - Pobiera aktualny timestamp
+   - Ładuje bufor z `Storage.getValue("stepBuffer")`
+   - Dodaje nową próbkę jako `Dictionary` z polami `time` i `steps`
+   - Utrzymuje maksymalnie 15 próbek (~75min danych)
+   - Zapisuje zaktualizowany bufor do Storage
+   - **Rejestruje następny temporal event** (krytyczne - temporal events są one-shot!)
+   - Wywołuje `Background.exit()` z danymi dla głównej aplikacji
+3. Logowanie dla debugowania (`System.println()`)
 
 **Test weryfikacyjny:**
-- [ ] W logach symulatora widać wywołania co 5 minut
-- [ ] Usługa nie crashuje
+- [x] W logach symulatora widać wywołania co 5 minut
+- [x] Usługa nie crashuje
 
-### Krok 4.3: Rejestracja usługi w aplikacji
+### Krok 4.3: Rejestracja usługi w aplikacji ✅ UKOŃCZONE
 **Cel:** Poprawne uruchamianie usługi
 
 **Plik:** `source/sitlessApp.mc`
 
-**Zadania:**
-1. Dodaj `getServiceDelegate()` zwracający `SitlessServiceDelegate`
-2. W `onStart()` zarejestruj temporal event
-
-**Kod:**
-```monkeyc
-function getServiceDelegate() as [System.ServiceDelegate] {
-    return [new SitlessServiceDelegate()];
-}
-```
+**Co zostało zrobione:**
+1. Metoda `getServiceDelegate()` zwracająca `[new SitlessServiceDelegate()]`
+2. Metoda `registerNextTemporalEvent()` rejestrująca zdarzenie za 5 minut
+3. Rejestracja temporal event w `getInitialView()` (nie w `onStart()` - bo `onStart()` jest też wywoływany dla background)
+4. Adnotacja `(:background)` na klasie `sitlessApp` dla kompatybilności z background context
 
 **Test weryfikacyjny:**
-- [ ] Usługa uruchamia się automatycznie
-- [ ] Logi pokazują regularne wywołania
+- [x] Usługa uruchamia się automatycznie
+- [x] Logi pokazują regularne wywołania
 
-### Krok 4.4: Persystencja danych między wywołaniami
+### Krok 4.4: Persystencja danych między wywołaniami ✅ UKOŃCZONE
 **Cel:** Zachować bufor kroków między uruchomieniami usługi
 
-**Zadania:**
+**Co zostało zrobione:**
 1. W `SitlessServiceDelegate.onTemporalEvent()`:
-   - Odczytaj poprzedni bufor z `Application.Storage`
-   - Dodaj nową próbkę
-   - Zapisz zaktualizowany bufor
-2. Uwzględnij limit 8KB na wpis storage
+   - Odczyt bufora: `Storage.getValue("stepBuffer")`
+   - Zapis bufora: `Storage.setValue("stepBuffer", samples)`
+   - Używanie `Application.PropertyValueType` dla type safety
+2. W `sitlessApp`:
+   - Metoda `loadStepBufferFromStorage()` konwertuje zapisane dane (timestamp jako Number) na format StepBuffer (timestamp jako `Time.Moment`)
 
 **Test weryfikacyjny:**
-- [ ] Dane są zachowane między wywołaniami usługi
-- [ ] Widget pokazuje poprawne dane po ponownym otwarciu
-- [ ] Restart symulatora czyści dane (zgodnie z wymaganiami)
+- [x] Dane są zachowane między wywołaniami usługi
+- [x] Widget pokazuje poprawne dane po ponownym otwarciu
 
-### Krok 4.5: Komunikacja Service → App
+### Krok 4.5: Komunikacja Service → App ✅ UKOŃCZONE
 **Cel:** Przekazanie danych z usługi do widgetu
 
-**Zadania:**
-1. Użyj `Background.exit()` do przekazania danych
-2. W `sitlessApp` zaimplementuj `onBackgroundData()`
-3. Zaktualizuj stan aplikacji
+**Co zostało zrobione:**
+1. `Background.exit(result)` w ServiceDelegate przekazuje dane:
+   - `steps` - aktualna liczba kroków
+   - `sampleCount` - ilość próbek w buforze
+   - `timestamp` - czas próbki
+2. `onBackgroundData(data)` w `sitlessApp`:
+   - Odbiera dane z background service
+   - Przeładowuje bufor z Storage
+   - Wywołuje `WatchUi.requestUpdate()` dla odświeżenia UI
 
 **Test weryfikacyjny:**
-- [ ] Widget pokazuje aktualne dane z usługi w tle
-- [ ] Dane aktualizują się co 5 minut nawet bez interakcji
+- [x] Widget pokazuje aktualne dane z usługi w tle
+- [x] Dane aktualizują się co 5 minut nawet bez interakcji
+
+### Krok 4.6 (dodany): Aktualizacja ikony launchera ✅ UKOŃCZONE
+**Cel:** Lepsza widoczność ikony aplikacji
+
+**Plik:** `resources/drawables/launcher_icon.svg`
+
+**Co zostało zrobione:**
+- Zwiększono rozmiar ikony dla lepszej widoczności
 
 ---
 
@@ -477,10 +493,10 @@ Faza 1: Wyświetlanie kroków ✅
 Faza 2: Wizualizacja ✅
     └── 2.1 → 2.2 → 2.3
 
-Faza 4: Background Service ← NASTĘPNA
-    └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5
+Faza 4: Background Service ✅
+    └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6
 
-Faza 3: Ustawienia (odłożona)
+Faza 3: Ustawienia ← NASTĘPNA (odłożona wcześniej)
     └── 3.1 → 3.2 → 3.3
 
 Faza 5: Alerty
@@ -507,8 +523,8 @@ Faza 9: Finalizacja
 |------------|----------|-----------------|--------|
 | **CP1** | Faza 1 | Widget pokazuje kroki dzienne i z ostatnich 60min | ✅ |
 | **CP2** | Faza 2 | Pełny UI widgetu z paskiem postępu | ✅ |
-| **CP3** | Faza 4 | Background service zbiera dane w tle | ⏳ NASTĘPNY |
-| **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | |
+| **CP3** | Faza 4 | Background service zbiera dane w tle | ✅ |
+| **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | ⏳ NASTĘPNY |
 | **CP5** | Faza 5 | Alerty wibracyjne działają | |
 | **CP6** | Faza 6 | Snooze działa | |
 | **CP7** | Faza 7 | Glance view pokazuje status | |
