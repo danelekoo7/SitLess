@@ -143,69 +143,304 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ---
 
-## Faza 3: Ustawienia użytkownika (ODŁOŻONA - po Fazie 4)
+## Faza 3: Ustawienia użytkownika ⏳ NASTĘPNA
 
-### Krok 3.1: Definicja ustawień w XML
-**Cel:** Przygotować strukturę ustawień dla Garmin Connect Mobile
+**Filozofia:** Małe, testowalne kroki. Najpierw UI ustawień, potem integracja z logiką.
 
-**Nowy plik:** `resources/settings/settings.xml`
+### Krok 3.1: Minimalny settings.xml z jednym ustawieniem (minSteps)
+**Cel:** Wyświetlić okno ustawień w Garmin Connect Mobile z jednym polem
 
-**Zadania:**
-1. Utwórz katalog `resources/settings/`
-2. Zdefiniuj ustawienia:
-   - `minSteps` (Number, default: 50)
-   - `timeWindow` (Number, default: 60)
-   - `startHour` (Number, default: 7)
-   - `endHour` (Number, default: 21)
+**Nowe pliki:**
+1. `resources/settings/properties.xml`:
+```xml
+<properties>
+    <property id="minSteps" type="number">50</property>
+</properties>
+```
 
-**Struktura:**
+2. `resources/settings/settings.xml`:
 ```xml
 <settings>
-    <setting propertyKey="@Properties.minSteps" title="@Strings.SettingMinSteps">
+    <setting propertyKey="@Properties.minSteps" title="@Strings.minStepsTitle">
         <settingConfig type="numeric" min="10" max="500" />
     </setting>
-    <!-- ... pozostałe ustawienia -->
 </settings>
 ```
 
-**Test weryfikacyjny:**
-- [ ] Plik kompiluje się bez błędów
-- [ ] W symulatorze: Settings → App Settings pokazuje ustawienia
+**Modyfikacja:** `resources/strings/strings.xml` - dodać:
+```xml
+<string id="minStepsTitle">Step Goal</string>
+```
 
-### Krok 3.2: Odczyt ustawień w kodzie
-**Cel:** Używać ustawień użytkownika zamiast hardcoded wartości
+**Test weryfikacyjny:**
+- [ ] Zbuduj projekt: "Monkey C: Build for Device"
+- [ ] Uruchom w symulatorze: "Monkey C: Run"
+- [ ] File > Edit Persistent Storage > Edit Application Properties
+- [ ] Widoczne pole "Step Goal" z wartością 50
+- [ ] Zmiana wartości zapisuje się poprawnie
+
+### Krok 3.2: Odczyt minSteps w sitlessView
+**Cel:** Zastąpić hardcoded `DEFAULT_STEP_GOAL` wartością z ustawień
+
+**Plik:** `source/sitlessView.mc`
+
+**Zmiany:**
+1. Dodać import: `import Toybox.Application.Properties;`
+2. Dodać metodę:
+```monkeyc
+private function getMinSteps() as Number {
+    try {
+        var value = Properties.getValue("minSteps");
+        if (value != null && value instanceof Number) {
+            return value as Number;
+        }
+    } catch (e) {
+        System.println("SitLess: Error reading minSteps");
+    }
+    return 50;
+}
+```
+3. Zastąpić wszystkie `DEFAULT_STEP_GOAL` wywołaniem `getMinSteps()`
+
+**Test weryfikacyjny:**
+- [ ] Widget wyświetla "X / 50"
+- [ ] Zmień minSteps na 100 w ustawieniach
+- [ ] Po ponownym otwarciu widget wyświetla "X / 100"
+
+### Krok 3.3: Dodanie ustawienia timeWindow
+**Cel:** Drugie ustawienie - okno czasowe
+
+**Modyfikacje:**
+1. `resources/settings/properties.xml` - dodać:
+```xml
+<property id="timeWindow" type="number">60</property>
+```
+
+2. `resources/settings/settings.xml` - dodać:
+```xml
+<setting propertyKey="@Properties.timeWindow" title="@Strings.timeWindowTitle">
+    <settingConfig type="numeric" min="30" max="120" />
+</setting>
+```
+
+3. `resources/strings/strings.xml` - dodać:
+```xml
+<string id="timeWindowTitle">Time Window (min)</string>
+```
+
+**Test weryfikacyjny:**
+- [ ] Dwa pola widoczne: "Step Goal" i "Time Window (min)"
+- [ ] Domyślne wartości: 50 i 60
+
+### Krok 3.4: Odczyt timeWindow w sitlessView
+**Cel:** Użyć timeWindow w widoku
+
+**Plik:** `source/sitlessView.mc`
+
+**Zmiany:**
+1. Dodać metodę `getTimeWindow()` (analogicznie do `getMinSteps()`)
+2. Zastąpić `DEFAULT_WINDOW_MINUTES` wywołaniem `getTimeWindow()`
+3. Usunąć stałe `DEFAULT_WINDOW_MINUTES` i `DEFAULT_STEP_GOAL`
+
+**Test weryfikacyjny:**
+- [ ] Widget wyświetla "last 60 min"
+- [ ] Zmień timeWindow na 90
+- [ ] Po ponownym otwarciu wyświetla "last 90 min"
+
+### Krok 3.5: Dodanie ustawień startHour i endHour
+**Cel:** Godziny aktywności (do przyszłego użycia w alertach Faza 5)
+
+**Modyfikacje:**
+1. `resources/settings/properties.xml` - dodać:
+```xml
+<property id="startHour" type="number">7</property>
+<property id="endHour" type="number">21</property>
+```
+
+2. `resources/settings/settings.xml` - dodać:
+```xml
+<setting propertyKey="@Properties.startHour" title="@Strings.startHourTitle">
+    <settingConfig type="numeric" min="0" max="23" />
+</setting>
+<setting propertyKey="@Properties.endHour" title="@Strings.endHourTitle">
+    <settingConfig type="numeric" min="0" max="23" />
+</setting>
+```
+
+3. `resources/strings/strings.xml` - dodać:
+```xml
+<string id="startHourTitle">Active Hours Start</string>
+<string id="endHourTitle">Active Hours End</string>
+```
+
+**Test weryfikacyjny:**
+- [ ] Cztery pola widoczne w ustawieniach
+- [ ] Domyślne wartości: 50, 60, 7, 21
+
+### Krok 3.6: Utworzenie modułu SettingsManager
+**Cel:** Centralizacja odczytu ustawień (DRY)
 
 **Nowy plik:** `source/SettingsManager.mc`
 
-**Zadania:**
-1. Utwórz klasę do zarządzania ustawieniami
-2. Użyj `Application.Properties.getValue()` do odczytu
-3. Dodaj fallback na wartości domyślne
+```monkeyc
+import Toybox.Application.Properties;
+import Toybox.Lang;
+import Toybox.System;
+
+(:typecheck(disableBackgroundCheck))
+module SettingsManager {
+    const DEFAULT_MIN_STEPS = 50;
+    const DEFAULT_TIME_WINDOW = 60;
+    const DEFAULT_START_HOUR = 7;
+    const DEFAULT_END_HOUR = 21;
+
+    function getMinSteps() as Number {
+        return getNumberSetting("minSteps", DEFAULT_MIN_STEPS);
+    }
+
+    function getTimeWindow() as Number {
+        return getNumberSetting("timeWindow", DEFAULT_TIME_WINDOW);
+    }
+
+    function getStartHour() as Number {
+        return getNumberSetting("startHour", DEFAULT_START_HOUR);
+    }
+
+    function getEndHour() as Number {
+        return getNumberSetting("endHour", DEFAULT_END_HOUR);
+    }
+
+    function getRequiredBufferSize() as Number {
+        var timeWindow = getTimeWindow();
+        return (timeWindow / 5) + 3;  // +3 na margines bezpieczeństwa
+    }
+
+    private function getNumberSetting(key as String, defaultValue as Number) as Number {
+        try {
+            var value = Properties.getValue(key);
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading " + key);
+        }
+        return defaultValue;
+    }
+}
+```
+
+**Modyfikacja:** `source/sitlessView.mc`
+- Usunąć lokalne metody `getMinSteps()` i `getTimeWindow()`
+- Zastąpić wywołaniami `SettingsManager.getMinSteps()` itd.
 
 **Test weryfikacyjny:**
-- [ ] Zmiana ustawień w symulatorze wpływa na zachowanie aplikacji
-- [ ] Przy braku ustawień używane są wartości domyślne
+- [ ] Widget działa jak wcześniej
+- [ ] Ustawienia nadal poprawnie odczytywane
 
-### Krok 3.3: Integracja ustawień z logiką aplikacji
-**Cel:** Aplikacja respektuje ustawienia użytkownika
+### Krok 3.7: Dynamiczny rozmiar bufora w sitlessApp
+**Cel:** Rozmiar bufora oparty na timeWindow
 
-**Zadania:**
-1. `StepBuffer` używa `timeWindow` z ustawień
-2. Progress bar używa `minSteps` z ustawień
-3. (Przygotowanie) Logika sprawdza `startHour`/`endHour`
-4. **WAŻNE: Dynamiczny rozmiar bufora** - przy zmianie `timeWindow` należy przeliczyć `maxSamples` w StepBuffer:
-   ```monkeyc
-   // Wzór: (timeWindow / interval) + margines
-   // Przykład: timeWindow=120min, interval=5min
-   // maxSamples = (120 / 5) + 3 = 27
-   maxSamples = (timeWindow / 5) + 3;
-   ```
-   Aktualnie bufor ma stały rozmiar 15 próbek (~75min). Dla okien >75min trzeba zwiększyć rozmiar bufora.
+**Plik:** `source/sitlessApp.mc`
+
+**Zmiany:**
+1. W `getInitialView()` przed `loadStepBufferFromStorage()` dodać:
+```monkeyc
+syncSettingsToStorage();
+```
+
+2. Dodać metodę:
+```monkeyc
+(:typecheck(disableBackgroundCheck))
+private function syncSettingsToStorage() as Void {
+    var bufferSize = SettingsManager.getRequiredBufferSize();
+    Storage.setValue("maxSamples", bufferSize);
+    System.println("SitLess: Synced maxSamples=" + bufferSize);
+}
+```
+
+3. W `getStepBuffer()` zmienić `new StepBuffer(15)` na:
+```monkeyc
+_stepBuffer = new StepBuffer(SettingsManager.getRequiredBufferSize());
+```
 
 **Test weryfikacyjny:**
-- [ ] Zmiana `minSteps` zmienia wypełnienie paska
-- [ ] Zmiana `timeWindow` wpływa na obliczenia
-- [ ] Bufor ma wystarczający rozmiar dla ustawionego `timeWindow`
+- [ ] timeWindow=30 → bufor 9 próbek ((30/5)+3)
+- [ ] timeWindow=120 → bufor 27 próbek ((120/5)+3)
+- [ ] W logach widoczny poprawny rozmiar bufora
+
+### Krok 3.8: Dynamiczny rozmiar bufora w SitlessServiceDelegate
+**Cel:** Background service używa rozmiaru z Storage
+
+**Plik:** `source/SitlessServiceDelegate.mc`
+
+**Zmiana w `onTemporalEvent()`** - zastąpić:
+```monkeyc
+var maxSamples = 15;
+```
+Na:
+```monkeyc
+var maxSamples = 15; // default
+var storedMaxSamples = Storage.getValue("maxSamples");
+if (storedMaxSamples != null && storedMaxSamples instanceof Number) {
+    maxSamples = storedMaxSamples as Number;
+}
+```
+
+**Test weryfikacyjny:**
+- [ ] Ustaw timeWindow na 90 (oczekiwany rozmiar: 21)
+- [ ] Otwórz widget (synchronizuje ustawienia)
+- [ ] Poczekaj na background service
+- [ ] W logach: liczba próbek ≤ 21
+
+### Krok 3.9: Polskie tłumaczenia
+**Cel:** Lokalizacja ustawień
+
+**Nowy plik:** `resources-pol/strings/strings.xml`
+
+```xml
+<strings>
+    <string id="AppName">sitless</string>
+    <string id="minStepsTitle">Cel kroków</string>
+    <string id="timeWindowTitle">Okno czasowe (min)</string>
+    <string id="startHourTitle">Początek aktywności</string>
+    <string id="endHourTitle">Koniec aktywności</string>
+</strings>
+```
+
+**Test weryfikacyjny:**
+- [ ] Zmień język symulatora na polski
+- [ ] Etykiety ustawień po polsku
+
+### Krok 3.10: Walidacja ustawień (opcjonalny)
+**Cel:** Ochrona przed nieprawidłowymi wartościami
+
+**Plik:** `source/SettingsManager.mc`
+
+Dodać walidację zakresów w każdej metodzie get*:
+```monkeyc
+function getMinSteps() as Number {
+    var value = getNumberSetting("minSteps", DEFAULT_MIN_STEPS);
+    if (value < 10) { return 10; }
+    if (value > 500) { return 500; }
+    return value;
+}
+```
+
+**Test weryfikacyjny:**
+- [ ] Ręcznie ustaw minSteps na 5 (poniżej minimum)
+- [ ] Aplikacja używa wartości 10 (skorygowanej)
+
+### Diagram zależności Fazy 3:
+```
+Krok 3.1 ──> Krok 3.2 ──┐
+                        │
+Krok 3.3 ──> Krok 3.4 ──┼──> Krok 3.6 ──> Krok 3.7 ──> Krok 3.8
+                        │
+Krok 3.5 ──────────────┘
+
+Krok 3.9 (niezależny - po 3.5)
+Krok 3.10 (po 3.6)
+```
 
 ---
 
