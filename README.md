@@ -7,7 +7,7 @@ This repository contains the Monkey C source code and resources for the app.
 ## Features
 
 - Background step monitoring in a rolling time window (e.g., last 60 minutes)
-- Configurable via Garmin Connect (mobile):
+- Configurable from the watch (long-press UP) or via Garmin Connect (mobile):
   - Minimum steps target per window (default: 50)
   - Time window length (default: 60 minutes)
   - Active hours (default: 07:00–21:00)
@@ -37,8 +37,15 @@ Notes and constraints:
 
 ## Configuration
 
-Configuration is available in the Garmin Connect mobile app under the app’s Settings:
+Configuration is available in two ways:
 
+**On the watch:**
+- Long-press the UP button while in the widget to open the settings menu
+
+**Via Garmin Connect mobile app:**
+- Open the app's Settings in Garmin Connect
+
+Available settings:
 - Min. steps (default: 50)
 - Time window in minutes (default: 60)
 - Start/End time for active hours (default: 07:00–21:00)

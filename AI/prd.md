@@ -27,7 +27,11 @@ Istniejące rozwiązania systemowe (Garmin Move Alert) mają następujące wady:
 *   Reset danych następuje przy ponownym uruchomieniu urządzenia (brak trwałego zapisu historii po restarcie).
 
 ### 3.2. Konfiguracja (Ustawienia)
-Ustawienia dostępne wyłącznie z poziomu aplikacji Garmin Connect na telefonie:
+Ustawienia dostępne z dwóch miejsc:
+*   **Z poziomu zegarka:** Menu ustawień dostępne przez długie przytrzymanie przycisku UP w widgecie.
+*   **Z poziomu telefonu:** Aplikacja Garmin Connect Mobile (Settings).
+
+Parametry konfiguracyjne:
 *   **Min. steps:** Minimalna ilość kroków (domyślnie: 50).
 *   **Time window:** Długość sprawdzanego okresu (domyślnie: 60 min).
 *   **Start/End Time:** Godziny aktywności powiadomień (domyślnie: 07:00 - 21:00).
@@ -51,7 +55,6 @@ Ustawienia dostępne wyłącznie z poziomu aplikacji Garmin Connect na telefonie
 
 ## 4. Granice produktu
 *   **Brak historii długoterminowej:** Aplikacja nie służy do analizy trendów tygodniowych/miesięcznych. Dane są efemeryczne.
-*   **Brak ustawień w zegarku:** Zmiana konfiguracji możliwa tylko przez telefon (dla uproszczenia kodu MVP).
 *   **Brak dźwięku:** Aplikacja polega wyłącznie na wibracjach.
 *   **Dokładność:** Aplikacja polega na systemowym liczniku kroków Garmin; nie implementuje własnego algorytmu detekcji kroków z akcelerometru.
 *   **Zależność od API:** Działanie w tle jest ograniczone przez limity systemu Connect IQ (np. częstotliwość wybudzania serwisu).
@@ -60,7 +63,7 @@ Ustawienia dostępne wyłącznie z poziomu aplikacji Garmin Connect na telefonie
 
 | ID | Tytuł | Opis | Kryteria akceptacji |
 | :--- | :--- | :--- | :--- |
-| **US-001** | Konfiguracja parametrów | Jako pracownik biurowy, chcę ustawić minimalną liczbę kroków na 50 i okno czasowe na 60 minut w aplikacji Garmin Connect, aby dostosować przypomnienia do mojego trybu pracy. | 1. Użytkownik widzi opcje konfiguracji w Garmin Connect.<br>2. Zmiana ustawień jest synchronizowana z zegarkiem.<br>3. Aplikacja używa nowych parametrów w kolejnym cyklu sprawdzania. |
+| **US-001** | Konfiguracja parametrów | Jako pracownik biurowy, chcę ustawić minimalną liczbę kroków na 50 i okno czasowe na 60 minut, aby dostosować przypomnienia do mojego trybu pracy. | 1. Użytkownik może zmienić ustawienia z poziomu zegarka (długie przytrzymanie UP) lub w Garmin Connect.<br>2. Zmiana ustawień jest natychmiast stosowana.<br>3. Aplikacja używa nowych parametrów w kolejnym cyklu sprawdzania. |
 | **US-002** | Monitoring w tle | Jako użytkownik, chcę, aby aplikacja zliczała moje kroki w tle, nawet gdy tarcza zegarka jest wyłączona, abym nie musiał o tym myśleć. | 1. Aplikacja uruchamia serwis w tle co ok. 5 minut.<br>2. Bufor kroków jest aktualizowany bez otwierania widgetu.<br>3. Bateria nie zużywa się nadmiernie (>5% dziennie). |
 | **US-003** | Otrzymanie powiadomienia | Jako użytkownik, chcę poczuć wibrację i zobaczyć komunikat "Move!", gdy siedzę zbyt długo w godzinach aktywności, aby wstać i się rozruszać. | 1. Wibracja następuje tylko, gdy kroki < limit w zadanym oknie.<br>2. Powiadomienie pojawia się tylko w zdefiniowanych godzinach (np. 7-21).<br>3. Wyświetlany jest czytelny komunikat tekstowy. |
 | **US-004** | Funkcja Snooze | Jako kierowca, chcę móc szybko wybrać opcję "Drzemka" po otrzymaniu alertu, aby powiadomienie wróciło za 10 minut, gdy będę mógł się zatrzymać. | 1. Po alercie, naciśnięcie przycisku "Select" aktywuje drzemkę.<br>2. Powiadomienie znika natychmiast.<br>3. Kolejne sprawdzenie/powiadomienie następuje po 10 minutach, niezależnie od cyklu. |

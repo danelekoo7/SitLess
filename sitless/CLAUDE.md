@@ -50,12 +50,14 @@ This project uses the Visual Studio Code Connect IQ extension. Use the following
 - Uses XML layout from `resources/layouts/layout.xml`
 - Handles onUpdate, onShow, onHide lifecycle
 
-**Planned Components** (not yet implemented):
+**Implemented Components:**
 - `source/SitlessServiceDelegate.mc` - Background service for step monitoring
-- `source/SitlessGlanceView.mc` - Glance view for quick status
 - `source/StepBuffer.mc` - Rolling window step buffer implementation
-- `source/SitlessSettingsDelegate.mc` - Settings management
-- `resources/settings/settings.xml` - Settings UI definition
+- `resources/settings/settings.xml` - Settings UI definition (properties + settings combined)
+
+**Planned Components** (not yet implemented):
+- `source/SitlessGlanceView.mc` - Glance view for quick status
+- `source/SitlessInputDelegate.mc` - Input handling and settings menu access
 
 ### Resource Structure
 
@@ -92,7 +94,11 @@ The app will use Connect IQ's background service system:
 
 ### Settings & Configuration
 
-Settings are configured via Garmin Connect Mobile app:
+Settings can be configured in two ways:
+- **On the watch:** Long-press UP button in widget to open settings menu
+- **Via Garmin Connect Mobile app:** Settings section for the app
+
+Available settings:
 - `minSteps` - Minimum steps per window (default: 50)
 - `timeWindow` - Rolling window in minutes (default: 60)
 - `startTime` - Active hours start (default: 07:00)

@@ -191,9 +191,71 @@ private function getMinSteps() as Number {
 3. Zastąpić wszystkie `DEFAULT_STEP_GOAL` wywołaniem `getMinSteps()`
 
 **Test weryfikacyjny:**
-- [ ] Widget wyświetla "X / 50"
-- [ ] Zmień minSteps na 100 w ustawieniach
-- [ ] Po ponownym otwarciu widget wyświetla "X / 100"
+- [x] Widget wyświetla "X / 50"
+- [x] Zmień minSteps na 100 w ustawieniach (symulator)
+- [x] Po ponownym otwarciu widget wyświetla "X / 100"
+
+### Krok 3.2a: Menu ustawień na zegarku ⏳ NASTĘPNY
+**Cel:** Umożliwić zmianę ustawień bezpośrednio z poziomu zegarka (bez Garmin Connect Mobile)
+
+**Nowe pliki:**
+1. `source/SitlessInputDelegate.mc` - obsługa przycisków i menu
+
+**Modyfikacje:**
+1. `source/sitlessApp.mc` - rejestracja InputDelegate w `getInitialView()`
+
+**Szczegóły implementacji:**
+
+1. **SitlessInputDelegate.mc:**
+```monkeyc
+import Toybox.WatchUi;
+import Toybox.Lang;
+
+class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
+    function initialize() {
+        BehaviorDelegate.initialize();
+    }
+
+    // Długie przytrzymanie UP - otwiera menu
+    function onMenu() as Boolean {
+        WatchUi.pushView(
+            new Rez.Menus.MainMenu(),
+            new SitlessMenuDelegate(),
+            WatchUi.SLIDE_UP
+        );
+        return true;
+    }
+}
+```
+
+2. **Menu w resources** - dodać do `resources/menus/menu.xml`:
+```xml
+<menu id="MainMenu">
+    <menu-item id="settings" label="@Strings.SettingsLabel">Settings</menu-item>
+</menu>
+```
+
+3. **SitlessMenuDelegate** - obsługa wyboru z menu:
+   - Przy wyborze "Settings" → otworzyć systemowy picker dla wartości numerycznej
+   - Użyć `WatchUi.pushView()` z `NumberPicker` lub `Menu2` do edycji wartości
+
+4. **Rejestracja w sitlessApp.mc:**
+```monkeyc
+function getInitialView() as [Views] or [Views, InputDelegates] {
+    // ... existing code ...
+    return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates];
+}
+```
+
+**UWAGA:** Connect IQ nie ma wbudowanego "Settings Editor" na zegarku. Trzeba zbudować własne UI do edycji wartości (NumberPicker, Menu2 z opcjami, lub własny widok).
+
+**Test weryfikacyjny:**
+- [ ] Długie przytrzymanie UP otwiera menu
+- [ ] Menu zawiera opcję "Settings"
+- [ ] Wybór "Settings" pozwala edytować "Step Goal"
+- [ ] Zmiana wartości na zegarku jest zapisywana
+- [ ] Po zapisie widget wyświetla nową wartość
+- [ ] Test na prawdziwym urządzeniu (FR 255 lub podobne)
 
 ### Krok 3.3: Dodanie ustawienia timeWindow
 **Cel:** Drugie ustawienie - okno czasowe

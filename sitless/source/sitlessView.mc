@@ -3,12 +3,11 @@ import Toybox.WatchUi;
 import Toybox.ActivityMonitor;
 import Toybox.Time;
 import Toybox.Lang;
+import Toybox.Application.Properties;
 
 class sitlessView extends WatchUi.View {
     // Default time window in minutes
     private const DEFAULT_WINDOW_MINUTES = 60;
-    // Default step goal for the time window
-    private const DEFAULT_STEP_GOAL = 50;
 
     // Visibility flag for performance optimization
     private var _isVisible as Boolean = false;
@@ -50,9 +49,12 @@ class sitlessView extends WatchUi.View {
         var centerY = dc.getHeight() / 2;
         var screenWidth = dc.getWidth();
 
+        // Get step goal from settings
+        var stepGoal = getMinSteps();
+
         // Determine color based on goal progress
         var hasData = windowSteps >= 0;
-        var goalMet = hasData && windowSteps >= DEFAULT_STEP_GOAL;
+        var goalMet = hasData && windowSteps >= stepGoal;
         var progressColor = Graphics.COLOR_DK_GRAY;
         if (hasData) {
             progressColor = goalMet ? Graphics.COLOR_GREEN : Graphics.COLOR_RED;
@@ -70,7 +72,7 @@ class sitlessView extends WatchUi.View {
 
         // 2. Main step count (center, large font, colored)
         dc.setColor(progressColor, Graphics.COLOR_TRANSPARENT);
-        var mainText = hasData ? windowSteps + " / " + DEFAULT_STEP_GOAL : "...";
+        var mainText = hasData ? windowSteps + " / " + stepGoal : "...";
         dc.drawText(
             centerX,
             centerY - 10,
@@ -91,7 +93,7 @@ class sitlessView extends WatchUi.View {
 
         // Progress bar fill (colored based on status)
         if (hasData) {
-            var progress = windowSteps.toFloat() / DEFAULT_STEP_GOAL.toFloat();
+            var progress = windowSteps.toFloat() / stepGoal.toFloat();
             if (progress > 1.0) {
                 progress = 1.0;
             }
@@ -129,6 +131,19 @@ class sitlessView extends WatchUi.View {
             var stepBuffer = getApp().getStepBuffer();
             stepBuffer.addSample(steps, Time.now());
         }
+    }
+
+    // Read minSteps setting from Properties
+    private function getMinSteps() as Number {
+        try {
+            var value = Properties.getValue("minSteps");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading minSteps");
+        }
+        return 50;
     }
 
 }
