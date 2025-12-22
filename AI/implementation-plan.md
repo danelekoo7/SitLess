@@ -143,41 +143,29 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ---
 
-## Faza 3: Ustawienia użytkownika ⏳ NASTĘPNA
+## Faza 3: Ustawienia użytkownika ⏳ W TRAKCIE
 
 **Filozofia:** Małe, testowalne kroki. Najpierw UI ustawień, potem integracja z logiką.
 
-### Krok 3.1: Minimalny settings.xml z jednym ustawieniem (minSteps)
+### Krok 3.1: Minimalny settings.xml z jednym ustawieniem (minSteps) ✅ UKOŃCZONE
 **Cel:** Wyświetlić okno ustawień w Garmin Connect Mobile z jednym polem
 
-**Nowe pliki:**
-1. `resources/settings/properties.xml`:
-```xml
-<properties>
-    <property id="minSteps" type="number">50</property>
-</properties>
-```
+**Co zostało zrobione:**
+1. Utworzono `resources/settings/settings.xml` z elementami `<properties>` i `<settings>` w jednym pliku (format zalecany przez społeczność Connect IQ)
+2. Dodano string `minStepsTitle` do `resources/strings/strings.xml`
 
-2. `resources/settings/settings.xml`:
-```xml
-<settings>
-    <setting propertyKey="@Properties.minSteps" title="@Strings.minStepsTitle">
-        <settingConfig type="numeric" min="10" max="500" />
-    </setting>
-</settings>
-```
+**UWAGA - Format pliku:** Connect IQ pozwala na dwa podejścia:
+- Osobne pliki `properties.xml` i `settings.xml`
+- Jeden plik z root elementem `<resources>` zawierający `<properties>` i `<settings>` (użyty w tym projekcie)
 
-**Modyfikacja:** `resources/strings/strings.xml` - dodać:
-```xml
-<string id="minStepsTitle">Step Goal</string>
-```
+**UWAGA - Cache symulatora:** Jeśli ustawienia nie są widoczne w symulatorze, usuń folder `%TEMP%\GARMIN` i przebuduj projekt.
 
 **Test weryfikacyjny:**
-- [ ] Zbuduj projekt: "Monkey C: Build for Device"
-- [ ] Uruchom w symulatorze: "Monkey C: Run"
-- [ ] File > Edit Persistent Storage > Edit Application Properties
-- [ ] Widoczne pole "Step Goal" z wartością 50
-- [ ] Zmiana wartości zapisuje się poprawnie
+- [x] Zbuduj projekt: "Monkey C: Build for Device"
+- [x] Uruchom w symulatorze: "Monkey C: Run"
+- [x] File > Edit Persistent Storage > Edit Application Properties
+- [x] Widoczne pole "Step Goal" z wartością 50
+- [x] Zmiana wartości zapisuje się poprawnie
 
 ### Krok 3.2: Odczyt minSteps w sitlessView
 **Cel:** Zastąpić hardcoded `DEFAULT_STEP_GOAL` wartością z ustawień
