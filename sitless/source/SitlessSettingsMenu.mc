@@ -20,6 +20,10 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
             openStepGoalPicker();
         } else if (id == :timeWindow) {
             openTimeWindowPicker();
+        } else if (id == :startHour) {
+            openStartHourPicker();
+        } else if (id == :endHour) {
+            openEndHourPicker();
         }
     }
 
@@ -35,6 +39,20 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
         var currentValue = getTimeWindow();
         var picker = new TimeWindowPicker(currentValue);
         WatchUi.pushView(picker, new TimeWindowPickerDelegate(), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Open a picker to select start hour value
+    private function openStartHourPicker() as Void {
+        var currentValue = getHourValue("startHour");
+        var picker = new StartHourPicker(currentValue);
+        WatchUi.pushView(picker, new HourPickerDelegate("startHour"), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Open a picker to select end hour value
+    private function openEndHourPicker() as Void {
+        var currentValue = getHourValue("endHour");
+        var picker = new EndHourPicker(currentValue);
+        WatchUi.pushView(picker, new HourPickerDelegate("endHour"), WatchUi.SLIDE_LEFT);
     }
 
     //! Read current minSteps value from Properties
@@ -63,6 +81,21 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
             System.println("SitLess: Error reading timeWindow in menu");
         }
         return 60;
+    }
+
+    //! Read hour value from Properties
+    //! @param key The property key to read
+    //! @return hour value (0-23), defaults to 7 for startHour, 21 for endHour
+    private function getHourValue(key as String) as Number {
+        try {
+            var value = Properties.getValue(key);
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading " + key + " in menu");
+        }
+        return key.equals("startHour") ? 7 : 21;
     }
 }
 
@@ -239,6 +272,131 @@ class TimeWindowPickerDelegate extends WatchUi.PickerDelegate {
             System.println("SitLess: Time window set to " + value);
         } catch (e) {
             System.println("SitLess: Failed to save time window");
+        }
+
+        // Pop back to widget (picker + menu)
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+
+    //! Handle picker cancellation
+    //! @return true if handled
+    function onCancel() as Boolean {
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+//! Factory for generating hour picker values (0-23)
+class HourPickerFactory extends WatchUi.PickerFactory {
+
+    //! Constructor
+    function initialize() {
+        PickerFactory.initialize();
+    }
+
+    //! Get the number of items in the factory
+    //! @return 24 hours
+    function getSize() as Number {
+        return 24;
+    }
+
+    //! Get the value at the given index
+    //! @param index The index of the item (0-23)
+    //! @return The hour value
+    function getValue(index as Number) as Object? {
+        return index;
+    }
+
+    //! Get drawable for an item
+    //! @param index The index of the item
+    //! @param isSelected Whether this item is currently selected
+    //! @return A Text drawable showing the hour formatted as "H:00"
+    function getDrawable(index as Number, isSelected as Boolean) as Drawable? {
+        return new WatchUi.Text({
+            :text => index.toString() + ":00",
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_NUMBER_MEDIUM,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_CENTER
+        });
+    }
+}
+
+//! Picker view for selecting start hour
+class StartHourPicker extends WatchUi.Picker {
+    //! Constructor
+    //! @param currentValue The current hour value (0-23)
+    function initialize(currentValue as Number) {
+        var factory = new HourPickerFactory();
+
+        var title = new WatchUi.Text({
+            :text => WatchUi.loadResource(Rez.Strings.StartHourLabel) as String,
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_SMALL,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_BOTTOM
+        });
+
+        Picker.initialize({
+            :title => title,
+            :pattern => [factory] as Array<PickerFactory or Drawable>,
+            :defaults => [currentValue] as Array<Number>
+        });
+    }
+}
+
+//! Picker view for selecting end hour
+class EndHourPicker extends WatchUi.Picker {
+    //! Constructor
+    //! @param currentValue The current hour value (0-23)
+    function initialize(currentValue as Number) {
+        var factory = new HourPickerFactory();
+
+        var title = new WatchUi.Text({
+            :text => WatchUi.loadResource(Rez.Strings.EndHourLabel) as String,
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_SMALL,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_BOTTOM
+        });
+
+        Picker.initialize({
+            :title => title,
+            :pattern => [factory] as Array<PickerFactory or Drawable>,
+            :defaults => [currentValue] as Array<Number>
+        });
+    }
+}
+
+//! Delegate for handling hour picker selections
+class HourPickerDelegate extends WatchUi.PickerDelegate {
+    private var _propertyKey as String;
+
+    //! Constructor
+    //! @param propertyKey The property key to save the value to
+    function initialize(propertyKey as String) {
+        PickerDelegate.initialize();
+        _propertyKey = propertyKey;
+    }
+
+    //! Handle picker confirmation
+    //! @param values Array of selected values from each picker column
+    //! @return true if handled
+    function onAccept(values as Array) as Boolean {
+        var value = values[0] as Number;
+
+        // Validate range (0-23)
+        if (value < 0) { value = 0; }
+        if (value > 23) { value = 23; }
+
+        // Save to properties
+        try {
+            Properties.setValue(_propertyKey, value);
+            System.println("SitLess: " + _propertyKey + " set to " + value);
+        } catch (e) {
+            System.println("SitLess: Failed to save " + _propertyKey);
         }
 
         // Pop back to widget (picker + menu)

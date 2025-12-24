@@ -31,6 +31,9 @@ class sitlessApp extends Application.AppBase {
     // This is ONLY called for foreground app, never for background
     (:typecheck(disableBackgroundCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        // Sync settings to storage for background service
+        syncSettingsToStorage();
+
         // Load step buffer from storage (persisted by background service)
         loadStepBufferFromStorage();
 
@@ -44,9 +47,17 @@ class sitlessApp extends Application.AppBase {
     (:typecheck(disableBackgroundCheck))
     function getStepBuffer() as StepBuffer {
         if (_stepBuffer == null) {
-            _stepBuffer = new StepBuffer(15);
+            _stepBuffer = new StepBuffer(SettingsManager.getRequiredBufferSize());
         }
         return _stepBuffer as StepBuffer;
+    }
+
+    // Sync settings to storage for background service access
+    (:typecheck(disableBackgroundCheck))
+    private function syncSettingsToStorage() as Void {
+        var bufferSize = SettingsManager.getRequiredBufferSize();
+        Storage.setValue("maxSamples", bufferSize);
+        System.println("SitLess: Synced maxSamples=" + bufferSize);
     }
 
     // Return the service delegate for background processing

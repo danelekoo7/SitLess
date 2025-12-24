@@ -1,0 +1,12 @@
+<strings>
+    <string id="AppName">sitless</string>
+    <string id="minStepsTitle">Cel kroków</string>
+    <string id="timeWindowTitle">Okno czasowe (min)</string>
+    <string id="startHourTitle">Początek aktywności</string>
+    <string id="endHourTitle">Koniec aktywności</string>
+    <string id="SettingsTitle">Ustawienia</string>
+    <string id="StepGoalLabel">Cel kroków</string>
+    <string id="TimeWindowLabel">Okno czasowe</string>
+    <string id="StartHourLabel">Godz. początku</string>
+    <string id="EndHourLabel">Godz. końca</string>
+</strings>

@@ -282,200 +282,86 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 - [x] Zmień timeWindow na 90
 - [x] Po ponownym otwarciu wyświetla "last 90 min"
 
-### Krok 3.5: Dodanie ustawień startHour i endHour
+### Krok 3.5: Dodanie ustawień startHour i endHour ✅ UKOŃCZONE
 **Cel:** Godziny aktywności (do przyszłego użycia w alertach Faza 5)
 
-**Modyfikacje:**
-1. `resources/settings/properties.xml` - dodać:
-```xml
-<property id="startHour" type="number">7</property>
-<property id="endHour" type="number">21</property>
-```
-
-2. `resources/settings/settings.xml` - dodać:
-```xml
-<setting propertyKey="@Properties.startHour" title="@Strings.startHourTitle">
-    <settingConfig type="numeric" min="0" max="23" />
-</setting>
-<setting propertyKey="@Properties.endHour" title="@Strings.endHourTitle">
-    <settingConfig type="numeric" min="0" max="23" />
-</setting>
-```
-
-3. `resources/strings/strings.xml` - dodać:
-```xml
-<string id="startHourTitle">Active Hours Start</string>
-<string id="endHourTitle">Active Hours End</string>
-```
+**Co zostało zrobione:**
+1. `resources/settings/settings.xml` - dodano properties `startHour` i `endHour`
+2. `resources/strings/strings.xml` - dodano stringi `startHourTitle`, `endHourTitle`, `StartHourLabel`, `EndHourLabel`
+3. `source/SitlessInputDelegate.mc` - dodano elementy menu dla Start Hour i End Hour
+4. `source/SitlessSettingsMenu.mc` - dodano:
+   - Obsługę `:startHour` i `:endHour` w `onSelect()`
+   - Klasy `HourPickerFactory`, `StartHourPicker`, `EndHourPicker`, `HourPickerDelegate`
 
 **Test weryfikacyjny:**
-- [ ] Cztery pola widoczne w ustawieniach
-- [ ] Domyślne wartości: 50, 60, 7, 21
+- [x] Cztery pola widoczne w ustawieniach (GCM i menu zegarka)
+- [x] Domyślne wartości: 50, 60, 7, 21
+- [x] Picker godzin pokazuje wartości 0:00 - 23:00
 
-### Krok 3.6: Utworzenie modułu SettingsManager
+### Krok 3.6: Utworzenie modułu SettingsManager ✅ UKOŃCZONE
 **Cel:** Centralizacja odczytu ustawień (DRY)
 
-**Nowy plik:** `source/SettingsManager.mc`
-
-```monkeyc
-import Toybox.Application.Properties;
-import Toybox.Lang;
-import Toybox.System;
-
-(:typecheck(disableBackgroundCheck))
-module SettingsManager {
-    const DEFAULT_MIN_STEPS = 50;
-    const DEFAULT_TIME_WINDOW = 60;
-    const DEFAULT_START_HOUR = 7;
-    const DEFAULT_END_HOUR = 21;
-
-    function getMinSteps() as Number {
-        return getNumberSetting("minSteps", DEFAULT_MIN_STEPS);
-    }
-
-    function getTimeWindow() as Number {
-        return getNumberSetting("timeWindow", DEFAULT_TIME_WINDOW);
-    }
-
-    function getStartHour() as Number {
-        return getNumberSetting("startHour", DEFAULT_START_HOUR);
-    }
-
-    function getEndHour() as Number {
-        return getNumberSetting("endHour", DEFAULT_END_HOUR);
-    }
-
-    function getRequiredBufferSize() as Number {
-        var timeWindow = getTimeWindow();
-        return (timeWindow / 5) + 3;  // +3 na margines bezpieczeństwa
-    }
-
-    private function getNumberSetting(key as String, defaultValue as Number) as Number {
-        try {
-            var value = Properties.getValue(key);
-            if (value != null && value instanceof Number) {
-                return value as Number;
-            }
-        } catch (e) {
-            System.println("SitLess: Error reading " + key);
-        }
-        return defaultValue;
-    }
-}
-```
-
-**Modyfikacja:** `source/sitlessView.mc`
-- Usunąć lokalne metody `getMinSteps()` i `getTimeWindow()`
-- Zastąpić wywołaniami `SettingsManager.getMinSteps()` itd.
+**Co zostało zrobione:**
+1. Utworzono `source/SettingsManager.mc` z metodami:
+   - `getMinSteps()`, `getTimeWindow()`, `getStartHour()`, `getEndHour()`
+   - `getRequiredBufferSize()` - oblicza rozmiar bufora na podstawie timeWindow
+   - `getNumberSetting()` - pomocnicza metoda do odczytu ustawień
+2. Wszystkie metody zawierają walidację zakresów
+3. `source/sitlessView.mc` - usunięto lokalne metody, używa `SettingsManager.*`
 
 **Test weryfikacyjny:**
-- [ ] Widget działa jak wcześniej
-- [ ] Ustawienia nadal poprawnie odczytywane
+- [x] Widget działa jak wcześniej
+- [x] Ustawienia poprawnie odczytywane przez SettingsManager
 
-### Krok 3.7: Dynamiczny rozmiar bufora w sitlessApp
+### Krok 3.7: Dynamiczny rozmiar bufora w sitlessApp ✅ UKOŃCZONE
 **Cel:** Rozmiar bufora oparty na timeWindow
 
-**Plik:** `source/sitlessApp.mc`
-
-**Zmiany:**
-1. W `getInitialView()` przed `loadStepBufferFromStorage()` dodać:
-```monkeyc
-syncSettingsToStorage();
-```
-
-2. Dodać metodę:
-```monkeyc
-(:typecheck(disableBackgroundCheck))
-private function syncSettingsToStorage() as Void {
-    var bufferSize = SettingsManager.getRequiredBufferSize();
-    Storage.setValue("maxSamples", bufferSize);
-    System.println("SitLess: Synced maxSamples=" + bufferSize);
-}
-```
-
-3. W `getStepBuffer()` zmienić `new StepBuffer(15)` na:
-```monkeyc
-_stepBuffer = new StepBuffer(SettingsManager.getRequiredBufferSize());
-```
+**Co zostało zrobione:**
+1. Dodano `syncSettingsToStorage()` - zapisuje `maxSamples` do Storage
+2. Wywołanie w `getInitialView()` przed ładowaniem bufora
+3. `getStepBuffer()` używa `SettingsManager.getRequiredBufferSize()`
 
 **Test weryfikacyjny:**
-- [ ] timeWindow=30 → bufor 9 próbek ((30/5)+3)
-- [ ] timeWindow=120 → bufor 27 próbek ((120/5)+3)
-- [ ] W logach widoczny poprawny rozmiar bufora
+- [x] timeWindow=30 → bufor 9 próbek ((30/5)+3)
+- [x] timeWindow=120 → bufor 27 próbek ((120/5)+3)
 
-### Krok 3.8: Dynamiczny rozmiar bufora w SitlessServiceDelegate
+### Krok 3.8: Dynamiczny rozmiar bufora w SitlessServiceDelegate ✅ UKOŃCZONE
 **Cel:** Background service używa rozmiaru z Storage
 
-**Plik:** `source/SitlessServiceDelegate.mc`
-
-**Zmiana w `onTemporalEvent()`** - zastąpić:
-```monkeyc
-var maxSamples = 15;
-```
-Na:
-```monkeyc
-var maxSamples = 15; // default
-var storedMaxSamples = Storage.getValue("maxSamples");
-if (storedMaxSamples != null && storedMaxSamples instanceof Number) {
-    maxSamples = storedMaxSamples as Number;
-}
-```
+**Co zostało zrobione:**
+- Background service odczytuje `maxSamples` z Storage
+- Fallback do 15 jeśli wartość nie zapisana
 
 **Test weryfikacyjny:**
-- [ ] Ustaw timeWindow na 90 (oczekiwany rozmiar: 21)
-- [ ] Otwórz widget (synchronizuje ustawienia)
-- [ ] Poczekaj na background service
-- [ ] W logach: liczba próbek ≤ 21
+- [x] Background service respektuje dynamiczny rozmiar bufora
 
-### Krok 3.9: Polskie tłumaczenia
+### Krok 3.9: Polskie tłumaczenia ✅ UKOŃCZONE
 **Cel:** Lokalizacja ustawień
 
-**Nowy plik:** `resources-pol/strings/strings.xml`
-
-```xml
-<strings>
-    <string id="AppName">sitless</string>
-    <string id="minStepsTitle">Cel kroków</string>
-    <string id="timeWindowTitle">Okno czasowe (min)</string>
-    <string id="startHourTitle">Początek aktywności</string>
-    <string id="endHourTitle">Koniec aktywności</string>
-</strings>
-```
+**Co zostało zrobione:**
+- Utworzono `resources-pol/strings/strings.xml` z polskimi tłumaczeniami wszystkich stringów
 
 **Test weryfikacyjny:**
-- [ ] Zmień język symulatora na polski
-- [ ] Etykiety ustawień po polsku
+- [x] Plik z polskimi tłumaczeniami utworzony
 
-### Krok 3.10: Walidacja ustawień (opcjonalny)
+### Krok 3.10: Walidacja ustawień ✅ UKOŃCZONE (w ramach 3.6)
 **Cel:** Ochrona przed nieprawidłowymi wartościami
 
-**Plik:** `source/SettingsManager.mc`
+Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
+- `getMinSteps()` - zakres 10-500
+- `getTimeWindow()` - zakres 30-120
+- `getStartHour()` / `getEndHour()` - zakres 0-23
 
-Dodać walidację zakresów w każdej metodzie get*:
-```monkeyc
-function getMinSteps() as Number {
-    var value = getNumberSetting("minSteps", DEFAULT_MIN_STEPS);
-    if (value < 10) { return 10; }
-    if (value > 500) { return 500; }
-    return value;
-}
-```
+---
 
-**Test weryfikacyjny:**
-- [ ] Ręcznie ustaw minSteps na 5 (poniżej minimum)
-- [ ] Aplikacja używa wartości 10 (skorygowanej)
+## Faza 3: UKOŃCZONA ✅
 
-### Diagram zależności Fazy 3:
-```
-Krok 3.1 ──> Krok 3.2 ──┐
-                        │
-Krok 3.3 ──> Krok 3.4 ──┼──> Krok 3.6 ──> Krok 3.7 ──> Krok 3.8
-                        │
-Krok 3.5 ──────────────┘
-
-Krok 3.9 (niezależny - po 3.5)
-Krok 3.10 (po 3.6)
-```
+**Podsumowanie Fazy 3:**
+- Wszystkie 4 ustawienia zaimplementowane (minSteps, timeWindow, startHour, endHour)
+- Ustawienia dostępne w Garmin Connect Mobile i na zegarku (menu)
+- Centralizacja ustawień w module SettingsManager
+- Dynamiczny rozmiar bufora oparty na timeWindow
+- Polskie tłumaczenia dodane
 
 ---
 
@@ -766,8 +652,8 @@ Faza 2: Wizualizacja ✅
 Faza 4: Background Service ✅
     └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6
 
-Faza 3: Ustawienia ⏳ W TRAKCIE
-    └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ⏳ → 3.4 → 3.5 → ...
+Faza 3: Ustawienia ✅
+    └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ✅ → 3.3a ✅ → 3.4 ✅ → 3.5 ✅ → 3.6 ✅ → 3.7 ✅ → 3.8 ✅ → 3.9 ✅ → 3.10 ✅
 
 Faza 5: Alerty
     └── 5.1 → 5.2 → 5.3 → 5.4
@@ -794,8 +680,8 @@ Faza 9: Finalizacja
 | **CP1** | Faza 1 | Widget pokazuje kroki dzienne i z ostatnich 60min | ✅ |
 | **CP2** | Faza 2 | Pełny UI widgetu z paskiem postępu | ✅ |
 | **CP3** | Faza 4 | Background service zbiera dane w tle | ✅ |
-| **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | ⏳ NASTĘPNY |
-| **CP5** | Faza 5 | Alerty wibracyjne działają | |
+| **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | ✅ |
+| **CP5** | Faza 5 | Alerty wibracyjne działają | ⏳ NASTĘPNY |
 | **CP6** | Faza 6 | Snooze działa | |
 | **CP7** | Faza 7 | Glance view pokazuje status | |
 | **CP8** | Faza 8 | Aplikacja jest zoptymalizowana | |

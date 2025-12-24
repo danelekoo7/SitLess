@@ -3,7 +3,6 @@ import Toybox.WatchUi;
 import Toybox.ActivityMonitor;
 import Toybox.Time;
 import Toybox.Lang;
-import Toybox.Application.Properties;
 
 class sitlessView extends WatchUi.View {
     // Visibility flag for performance optimization
@@ -39,7 +38,7 @@ class sitlessView extends WatchUi.View {
 
         // Get steps in rolling window from buffer
         var stepBuffer = getApp().getStepBuffer();
-        var timeWindow = getTimeWindow();
+        var timeWindow = SettingsManager.getTimeWindow();
         var windowSteps = stepBuffer.getStepsInWindow(timeWindow);
         var sampleCount = stepBuffer.getSampleCount();
 
@@ -48,7 +47,7 @@ class sitlessView extends WatchUi.View {
         var screenWidth = dc.getWidth();
 
         // Get step goal from settings
-        var stepGoal = getMinSteps();
+        var stepGoal = SettingsManager.getMinSteps();
 
         // Determine color based on goal progress
         var hasData = windowSteps >= 0;
@@ -130,31 +129,4 @@ class sitlessView extends WatchUi.View {
             stepBuffer.addSample(steps, Time.now());
         }
     }
-
-    // Read minSteps setting from Properties
-    private function getMinSteps() as Number {
-        try {
-            var value = Properties.getValue("minSteps");
-            if (value != null && value instanceof Number) {
-                return value as Number;
-            }
-        } catch (e) {
-            System.println("SitLess: Error reading minSteps");
-        }
-        return 50;
-    }
-
-    // Read timeWindow setting from Properties
-    private function getTimeWindow() as Number {
-        try {
-            var value = Properties.getValue("timeWindow");
-            if (value != null && value instanceof Number) {
-                return value as Number;
-            }
-        } catch (e) {
-            System.println("SitLess: Error reading timeWindow");
-        }
-        return 60;
-    }
-
 }

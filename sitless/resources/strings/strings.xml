@@ -2,7 +2,11 @@
     <string id="AppName">sitless</string>
     <string id="minStepsTitle">Step Goal</string>
     <string id="timeWindowTitle">Time Window (min)</string>
+    <string id="startHourTitle">Active Hours Start</string>
+    <string id="endHourTitle">Active Hours End</string>
     <string id="SettingsTitle">Settings</string>
     <string id="StepGoalLabel">Step Goal</string>
     <string id="TimeWindowLabel">Time Window</string>
+    <string id="StartHourLabel">Start Hour</string>
+    <string id="EndHourLabel">End Hour</string>
 </strings>

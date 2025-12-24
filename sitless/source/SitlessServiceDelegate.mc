@@ -42,8 +42,12 @@ class SitlessServiceDelegate extends System.ServiceDelegate {
         } as Dictionary<Application.PropertyKeyType, Application.PropertyValueType>;
         samples.add(newSample);
 
-        // Keep only last 15 samples (~75 min of data)
-        var maxSamples = 15;
+        // Keep only required number of samples based on timeWindow setting
+        var maxSamples = 15; // default
+        var storedMaxSamples = Storage.getValue("maxSamples");
+        if (storedMaxSamples != null && storedMaxSamples instanceof Number) {
+            maxSamples = storedMaxSamples as Number;
+        }
         while (samples.size() > maxSamples) {
             samples = samples.slice(1, null) as Array<Application.PropertyValueType>;
         }

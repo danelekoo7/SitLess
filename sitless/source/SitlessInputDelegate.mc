@@ -27,8 +27,25 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             :timeWindow,
             {}
         ));
+        menu.addItem(new WatchUi.MenuItem(
+            WatchUi.loadResource(Rez.Strings.StartHourLabel) as String,
+            formatHour(getStartHour()),
+            :startHour,
+            {}
+        ));
+        menu.addItem(new WatchUi.MenuItem(
+            WatchUi.loadResource(Rez.Strings.EndHourLabel) as String,
+            formatHour(getEndHour()),
+            :endHour,
+            {}
+        ));
         WatchUi.pushView(menu, new SitlessMenuDelegate(), WatchUi.SLIDE_UP);
         return true;
+    }
+
+    //! Format hour for display (e.g., "7:00")
+    private function formatHour(hour as Number) as String {
+        return hour.toString() + ":00";
     }
 
     //! Read current minSteps value from Properties
@@ -57,5 +74,33 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             System.println("SitLess: Error reading timeWindow in delegate");
         }
         return 60;
+    }
+
+    //! Read current startHour value from Properties
+    //! @return current start hour value (0-23)
+    private function getStartHour() as Number {
+        try {
+            var value = Application.Properties.getValue("startHour");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading startHour in delegate");
+        }
+        return 7;
+    }
+
+    //! Read current endHour value from Properties
+    //! @return current end hour value (0-23)
+    private function getEndHour() as Number {
+        try {
+            var value = Application.Properties.getValue("endHour");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading endHour in delegate");
+        }
+        return 21;
     }
 }

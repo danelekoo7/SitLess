@@ -2,6 +2,8 @@
     <properties>
         <property id="minSteps" type="number">50</property>
         <property id="timeWindow" type="number">60</property>
+        <property id="startHour" type="number">7</property>
+        <property id="endHour" type="number">21</property>
     </properties>
 
     <settings>
@@ -10,6 +12,12 @@
         </setting>
         <setting propertyKey="@Properties.timeWindow" title="@Strings.timeWindowTitle">
             <settingConfig type="numeric" min="30" max="120" />
+        </setting>
+        <setting propertyKey="@Properties.startHour" title="@Strings.startHourTitle">
+            <settingConfig type="numeric" min="0" max="23" />
+        </setting>
+        <setting propertyKey="@Properties.endHour" title="@Strings.endHourTitle">
+            <settingConfig type="numeric" min="0" max="23" />
         </setting>
     </settings>
 </resources>
