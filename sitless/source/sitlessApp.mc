@@ -37,7 +37,7 @@ class sitlessApp extends Application.AppBase {
         // Register for next temporal event (background service)
         registerNextTemporalEvent();
 
-        return [ new sitlessView() ];
+        return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates];
     }
 
     // Get the step buffer instance (creates lazily if needed)

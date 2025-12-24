@@ -195,73 +195,52 @@ private function getMinSteps() as Number {
 - [x] Zmień minSteps na 100 w ustawieniach (symulator)
 - [x] Po ponownym otwarciu widget wyświetla "X / 100"
 
-### Krok 3.2a: Menu ustawień na zegarku ⏳ NASTĘPNY
+### Krok 3.2a: Menu ustawień na zegarku ✅ UKOŃCZONE
 **Cel:** Umożliwić zmianę ustawień bezpośrednio z poziomu zegarka (bez Garmin Connect Mobile)
 
 **Nowe pliki:**
-1. `source/SitlessInputDelegate.mc` - obsługa przycisków i menu
+1. `source/SitlessInputDelegate.mc` - obsługa przycisku MENU (długie przytrzymanie UP)
+2. `source/SitlessSettingsMenu.mc` - delegat menu i picker do edycji wartości
 
 **Modyfikacje:**
 1. `source/sitlessApp.mc` - rejestracja InputDelegate w `getInitialView()`
+2. `resources/strings/strings.xml` - dodane etykiety `SettingsTitle` i `StepGoalLabel`
 
-**Szczegóły implementacji:**
+**Co zostało zrobione:**
 
 1. **SitlessInputDelegate.mc:**
+   - Klasa `SitlessInputDelegate` dziedzicząca z `BehaviorDelegate`
+   - Metoda `onMenu()` tworząca `Menu2` programowo (bez pliku XML)
+   - Menu wyświetla aktualną wartość Step Goal jako sublabel
+
+2. **SitlessSettingsMenu.mc:**
+   - `SitlessMenuDelegate` - obsługa wyboru z menu
+   - `StepGoalPickerFactory` - generowanie wartości 10-500 w krokach co 10
+   - `StepGoalPicker` - widok pickera z tytułem
+   - `StepGoalPickerDelegate` - zapis wartości do Properties
+
+3. **Rejestracja w sitlessApp.mc:**
 ```monkeyc
-import Toybox.WatchUi;
-import Toybox.Lang;
-
-class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
-    function initialize() {
-        BehaviorDelegate.initialize();
-    }
-
-    // Długie przytrzymanie UP - otwiera menu
-    function onMenu() as Boolean {
-        WatchUi.pushView(
-            new Rez.Menus.MainMenu(),
-            new SitlessMenuDelegate(),
-            WatchUi.SLIDE_UP
-        );
-        return true;
-    }
-}
+return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates];
 ```
 
-2. **Menu w resources** - dodać do `resources/menus/menu.xml`:
-```xml
-<menu id="MainMenu">
-    <menu-item id="settings" label="@Strings.SettingsLabel">Settings</menu-item>
-</menu>
-```
+**UWAGA - Symulator:** Symulator Connect IQ nie obsługuje długiego przytrzymania przycisków. Menu działa poprawnie na prawdziwym urządzeniu.
 
-3. **SitlessMenuDelegate** - obsługa wyboru z menu:
-   - Przy wyborze "Settings" → otworzyć systemowy picker dla wartości numerycznej
-   - Użyć `WatchUi.pushView()` z `NumberPicker` lub `Menu2` do edycji wartości
-
-4. **Rejestracja w sitlessApp.mc:**
-```monkeyc
-function getInitialView() as [Views] or [Views, InputDelegates] {
-    // ... existing code ...
-    return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates];
-}
-```
-
-**UWAGA:** Connect IQ nie ma wbudowanego "Settings Editor" na zegarku. Trzeba zbudować własne UI do edycji wartości (NumberPicker, Menu2 z opcjami, lub własny widok).
+**UWAGA - Implementacja:** Użyto `Menu2` tworzone programowo + `Picker` z `PickerFactory` zamiast deprecated `NumberPicker`.
 
 **Test weryfikacyjny:**
-- [ ] Długie przytrzymanie UP otwiera menu
-- [ ] Menu zawiera opcję "Settings"
-- [ ] Wybór "Settings" pozwala edytować "Step Goal"
-- [ ] Zmiana wartości na zegarku jest zapisywana
-- [ ] Po zapisie widget wyświetla nową wartość
-- [ ] Test na prawdziwym urządzeniu (FR 255 lub podobne)
+- [x] Długie przytrzymanie UP otwiera menu (na prawdziwym urządzeniu)
+- [x] Menu zawiera opcję "Step Goal" z aktualną wartością
+- [x] Wybór otwiera picker z wartościami 10-500 (krok 10)
+- [x] Zmiana wartości na zegarku jest zapisywana do Properties
+- [x] Po zapisie widget wyświetla nową wartość
+- [x] Test na prawdziwym urządzeniu (FR 255)
 
-### Krok 3.3: Dodanie ustawienia timeWindow
+### Krok 3.3: Dodanie ustawienia timeWindow ⏳ NASTĘPNY
 **Cel:** Drugie ustawienie - okno czasowe
 
 **Modyfikacje:**
-1. `resources/settings/properties.xml` - dodać:
+1. `resources/settings/settings.xml` - dodać (w sekcji `<properties>`):
 ```xml
 <property id="timeWindow" type="number">60</property>
 ```
@@ -781,8 +760,8 @@ Faza 2: Wizualizacja ✅
 Faza 4: Background Service ✅
     └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6
 
-Faza 3: Ustawienia ← NASTĘPNA (odłożona wcześniej)
-    └── 3.1 → 3.2 → 3.3
+Faza 3: Ustawienia ⏳ W TRAKCIE
+    └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ⏳ → 3.4 → 3.5 → ...
 
 Faza 5: Alerty
     └── 5.1 → 5.2 → 5.3 → 5.4

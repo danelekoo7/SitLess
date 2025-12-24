@@ -1,0 +1,168 @@
+import Toybox.Application.Properties;
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.System;
+import Toybox.WatchUi;
+
+//! Menu delegate for handling settings menu selections
+class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
+
+    //! Constructor
+    function initialize() {
+        Menu2InputDelegate.initialize();
+    }
+
+    //! Handle menu item selection
+    //! @param item The selected menu item
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId();
+        if (id == :stepGoal) {
+            openStepGoalPicker();
+        }
+    }
+
+    //! Open a picker to select step goal value
+    private function openStepGoalPicker() as Void {
+        var currentValue = getMinSteps();
+        var picker = new StepGoalPicker(currentValue);
+        WatchUi.pushView(picker, new StepGoalPickerDelegate(), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Read current minSteps value from Properties
+    //! @return current step goal value
+    private function getMinSteps() as Number {
+        try {
+            var value = Properties.getValue("minSteps");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            // Fall through to default
+        }
+        return 50;
+    }
+}
+
+//! Factory for generating step goal picker values
+//! Provides values from 10 to 500 in steps of 10
+class StepGoalPickerFactory extends WatchUi.PickerFactory {
+    private var _min as Number;
+    private var _max as Number;
+    private var _step as Number;
+
+    //! Constructor
+    //! @param min Minimum value
+    //! @param max Maximum value
+    //! @param step Step between values
+    function initialize(min as Number, max as Number, step as Number) {
+        PickerFactory.initialize();
+        _min = min;
+        _max = max;
+        _step = step;
+    }
+
+    //! Get the number of items in the factory
+    //! @return number of selectable values
+    function getSize() as Number {
+        return ((_max - _min) / _step) + 1;
+    }
+
+    //! Get the value at the given index
+    //! @param index The index of the item
+    //! @return The numeric value at this index
+    function getValue(index as Number) as Object? {
+        return _min + (index * _step);
+    }
+
+    //! Get drawable for an item
+    //! @param index The index of the item
+    //! @param isSelected Whether this item is currently selected
+    //! @return A Text drawable showing the value
+    function getDrawable(index as Number, isSelected as Boolean) as Drawable? {
+        var value = getValue(index) as Number;
+        return new WatchUi.Text({
+            :text => value.toString(),
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_NUMBER_MEDIUM,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_CENTER
+        });
+    }
+
+    //! Get index for a given value
+    //! @param value The value to find
+    //! @return The index of the value, or 0 if not found
+    function getIndexForValue(value as Number) as Number {
+        if (value < _min) {
+            return 0;
+        }
+        if (value > _max) {
+            return getSize() - 1;
+        }
+        return (value - _min) / _step;
+    }
+}
+
+//! Picker view for selecting step goal
+class StepGoalPicker extends WatchUi.Picker {
+    //! Constructor
+    //! @param currentValue The current step goal value
+    function initialize(currentValue as Number) {
+        var factory = new StepGoalPickerFactory(10, 500, 10);
+        var defaultIndex = factory.getIndexForValue(currentValue);
+
+        var title = new WatchUi.Text({
+            :text => WatchUi.loadResource(Rez.Strings.StepGoalLabel) as String,
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_SMALL,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_BOTTOM
+        });
+
+        Picker.initialize({
+            :title => title,
+            :pattern => [factory] as Array<PickerFactory or Drawable>,
+            :defaults => [defaultIndex] as Array<Number>
+        });
+    }
+}
+
+//! Delegate for handling step goal picker selections
+class StepGoalPickerDelegate extends WatchUi.PickerDelegate {
+
+    //! Constructor
+    function initialize() {
+        PickerDelegate.initialize();
+    }
+
+    //! Handle picker confirmation
+    //! @param values Array of selected values from each picker column
+    //! @return true if handled
+    function onAccept(values as Array) as Boolean {
+        var value = values[0] as Number;
+
+        // Validate range (should already be valid from factory, but double-check)
+        if (value < 10) { value = 10; }
+        if (value > 500) { value = 500; }
+
+        // Save to properties
+        try {
+            Properties.setValue("minSteps", value);
+            System.println("SitLess: Step goal set to " + value);
+        } catch (e) {
+            System.println("SitLess: Failed to save step goal");
+        }
+
+        // Pop back to widget (picker + menu)
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+
+    //! Handle picker cancellation
+    //! @return true if handled
+    function onCancel() as Boolean {
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
