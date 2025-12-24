@@ -298,6 +298,27 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 - [x] Domyślne wartości: 50, 60, 7, 21
 - [x] Picker godzin pokazuje wartości 0:00 - 23:00
 
+### Krok 3.5a: Dodanie ustawienia notificationsEnabled ⏳ DO ZROBIENIA
+**Cel:** Umożliwić użytkownikowi wyłączenie powiadomień (dla osób preferujących tylko podgląd danych)
+
+**Pliki do modyfikacji:**
+1. `resources/settings/settings.xml` - dodać property `notificationsEnabled` typu Boolean (domyślnie: true)
+2. `resources/strings/strings.xml` - dodać stringi `notificationsEnabledTitle`, `NotificationsLabel`
+3. `resources-pol/strings/strings.xml` - dodać polskie tłumaczenia
+4. `source/SitlessInputDelegate.mc` - dodać element menu Toggle dla powiadomień
+5. `source/SettingsManager.mc` - dodać metodę `getNotificationsEnabled()`
+
+**Implementacja:**
+- Typ: Boolean toggle (ON/OFF)
+- Domyślna wartość: true (powiadomienia włączone)
+- Gdy wyłączone: aplikacja działa tylko jako tracker kroków, bez wibracji i alertów
+- Widget i Glance nadal wyświetlają dane o krokach
+
+**Test weryfikacyjny:**
+- [ ] Toggle widoczny w ustawieniach (GCM i menu zegarka)
+- [ ] Domyślna wartość: ON (true)
+- [ ] `SettingsManager.getNotificationsEnabled()` zwraca poprawną wartość
+
 ### Krok 3.6: Utworzenie modułu SettingsManager ✅ UKOŃCZONE
 **Cel:** Centralizacja odczytu ustawień (DRY)
 
@@ -468,12 +489,14 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
 
 **Zadania:**
 1. Metoda `shouldAlert()` sprawdzająca:
+   - **Czy powiadomienia są włączone** (`SettingsManager.getNotificationsEnabled()`) — jeśli wyłączone, natychmiast zwróć false
    - Czy kroki < minSteps
    - Czy jesteśmy w godzinach aktywności
 2. Na razie bez exclusions (DND, sleep, etc.)
 
 **Test weryfikacyjny:**
-- [ ] `shouldAlert()` zwraca true gdy kroki < cel w godzinach aktywności
+- [ ] `shouldAlert()` zwraca false gdy `notificationsEnabled` = false (niezależnie od innych warunków)
+- [ ] `shouldAlert()` zwraca true gdy kroki < cel w godzinach aktywności (i powiadomienia włączone)
 - [ ] `shouldAlert()` zwraca false poza godzinami
 
 ### Krok 5.2: Implementacja exclusions

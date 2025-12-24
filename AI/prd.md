@@ -32,6 +32,7 @@ Ustawienia dostępne z dwóch miejsc:
 *   **Z poziomu telefonu:** Aplikacja Garmin Connect Mobile (Settings).
 
 Parametry konfiguracyjne:
+*   **Notifications enabled:** Włączenie/wyłączenie powiadomień wibracyjnych (domyślnie: ON). Gdy wyłączone, aplikacja działa tylko jako tracker kroków bez alertów — użytkownik może korzystać wyłącznie z podglądu danych.
 *   **Min. steps:** Minimalna ilość kroków (domyślnie: 50).
 *   **Time window:** Długość sprawdzanego okresu (domyślnie: 60 min).
 *   **Start/End Time:** Godziny aktywności powiadomień (domyślnie: 07:00 - 21:00).
@@ -72,6 +73,7 @@ Parametry konfiguracyjne:
 | **US-007** | Podgląd Glance | Jako posiadacz Fenixa, chcę widzieć postęp moich kroków na liście widgetów (Glance), aby szybko sprawdzić status bez wchodzenia w aplikację. | 1. Widok Glance pokazuje graficzną reprezentację (np. pasek) postępu.<br>2. Dane w Glance są aktualne (odświeżane przez serwis w tle). |
 | **US-008** | Blokowanie podczas sportu | Jako biegacz, nie chcę otrzymywać powiadomień "Rusz się" podczas trwania innej aktywności sportowej. | 1. Aplikacja sprawdza flagę aktywności systemowej.<br>2. Jeśli aktywność trwa, sprawdzanie warunków jest wstrzymane. |
 | **US-009** | Bezpieczna konfiguracja | Jako użytkownik, chcę mieć pewność, że tylko ja mogę zmieniać ustawienia mojej aplikacji poprzez moje uwierzytelnione konto Garmin. | 1. Dostęp do ustawień aplikacji jest możliwy tylko po zalogowaniu do aplikacji mobilnej Garmin Connect sparowanej z zegarkiem. |
+| **US-010** | Wyłączenie powiadomień | Jako użytkownik, chcę mieć możliwość wyłączenia powiadomień wibracyjnych, aby korzystać z aplikacji tylko jako trackera kroków bez irytujących alertów czy konieczności włączania trybu DND. | 1. Ustawienie "Notifications enabled" jest dostępne w konfiguracji.<br>2. Domyślnie powiadomienia są włączone (ON).<br>3. Gdy wyłączone, aplikacja nie wysyła żadnych wibracji ani alertów.<br>4. Widget i Glance nadal wyświetlają dane o krokach. |
 
 ## 6. Metryki sukcesu
 *   **Stabilność:** Aplikacja działa nieprzerwanie przez 24h bez systemowego "zabicia" procesu tła (crash rate < 1%).

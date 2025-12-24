@@ -46,6 +46,7 @@ Configuration is available in two ways:
 - Open the app's Settings in Garmin Connect
 
 Available settings:
+- Notifications enabled (default: ON) — toggle vibration alerts on/off; when disabled, the app works as a step tracker only
 - Min. steps (default: 50)
 - Time window in minutes (default: 60)
 - Start/End time for active hours (default: 07:00–21:00)

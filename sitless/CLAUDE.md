@@ -53,11 +53,14 @@ This project uses the Visual Studio Code Connect IQ extension. Use the following
 **Implemented Components:**
 - `source/SitlessServiceDelegate.mc` - Background service for step monitoring
 - `source/StepBuffer.mc` - Rolling window step buffer implementation
+- `source/SitlessInputDelegate.mc` - Input handling and settings menu access
+- `source/SitlessSettingsMenu.mc` - Settings menu delegates and pickers
+- `source/SettingsManager.mc` - Centralized settings access
 - `resources/settings/settings.xml` - Settings UI definition (properties + settings combined)
 
 **Planned Components** (not yet implemented):
 - `source/SitlessGlanceView.mc` - Glance view for quick status
-- `source/SitlessInputDelegate.mc` - Input handling and settings menu access
+- `source/AlertManager.mc` - Alert logic and exclusion conditions
 
 ### Resource Structure
 
@@ -99,10 +102,11 @@ Settings can be configured in two ways:
 - **Via Garmin Connect Mobile app:** Settings section for the app
 
 Available settings:
+- `notificationsEnabled` - Enable/disable vibration alerts (default: true). When disabled, app works as step tracker only without alerts.
 - `minSteps` - Minimum steps per window (default: 50)
 - `timeWindow` - Rolling window in minutes (default: 60)
-- `startTime` - Active hours start (default: 07:00)
-- `endTime` - Active hours end (default: 21:00)
+- `startHour` - Active hours start (default: 7)
+- `endHour` - Active hours end (default: 21)
 
 Access via `Toybox.Application.Properties`
 
@@ -199,10 +203,11 @@ function onUpdate(dc as Dc) as Void {
 ## Alert Exclusion Logic
 
 Do NOT send alerts when:
-1. Do Not Disturb is enabled: `System.getDeviceSettings().doNotDisturb`
-2. Sleep mode is active
-3. Activity in progress: check `ActivityMonitor.getInfo().activityClass`
-4. Watch is off-wrist
+1. Notifications are disabled: `SettingsManager.getNotificationsEnabled()` returns false
+2. Do Not Disturb is enabled: `System.getDeviceSettings().doNotDisturb`
+3. Sleep mode is active
+4. Activity in progress: check `ActivityMonitor.getInfo().activityClass`
+5. Watch is off-wrist
 
 ## Memory and Battery Constraints
 
