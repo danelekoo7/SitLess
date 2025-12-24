@@ -4,4 +4,5 @@
     <string id="timeWindowTitle">Time Window (min)</string>
     <string id="SettingsTitle">Settings</string>
     <string id="StepGoalLabel">Step Goal</string>
+    <string id="TimeWindowLabel">Time Window</string>
 </strings>

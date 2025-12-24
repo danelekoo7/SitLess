@@ -18,6 +18,8 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == :stepGoal) {
             openStepGoalPicker();
+        } else if (id == :timeWindow) {
+            openTimeWindowPicker();
         }
     }
 
@@ -26,6 +28,13 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
         var currentValue = getMinSteps();
         var picker = new StepGoalPicker(currentValue);
         WatchUi.pushView(picker, new StepGoalPickerDelegate(), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Open a picker to select time window value
+    private function openTimeWindowPicker() as Void {
+        var currentValue = getTimeWindow();
+        var picker = new TimeWindowPicker(currentValue);
+        WatchUi.pushView(picker, new TimeWindowPickerDelegate(), WatchUi.SLIDE_LEFT);
     }
 
     //! Read current minSteps value from Properties
@@ -37,9 +46,23 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
                 return value as Number;
             }
         } catch (e) {
-            // Fall through to default
+            System.println("SitLess: Error reading minSteps in menu");
         }
         return 50;
+    }
+
+    //! Read current timeWindow value from Properties
+    //! @return current time window value in minutes
+    private function getTimeWindow() as Number {
+        try {
+            var value = Properties.getValue("timeWindow");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading timeWindow in menu");
+        }
+        return 60;
     }
 }
 
@@ -151,6 +174,71 @@ class StepGoalPickerDelegate extends WatchUi.PickerDelegate {
             System.println("SitLess: Step goal set to " + value);
         } catch (e) {
             System.println("SitLess: Failed to save step goal");
+        }
+
+        // Pop back to widget (picker + menu)
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+
+    //! Handle picker cancellation
+    //! @return true if handled
+    function onCancel() as Boolean {
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+//! Picker view for selecting time window
+class TimeWindowPicker extends WatchUi.Picker {
+    //! Constructor
+    //! @param currentValue The current time window value in minutes
+    function initialize(currentValue as Number) {
+        // Reuse StepGoalPickerFactory with different range: 30-120, step 10
+        var factory = new StepGoalPickerFactory(30, 120, 10);
+        var defaultIndex = factory.getIndexForValue(currentValue);
+
+        var title = new WatchUi.Text({
+            :text => WatchUi.loadResource(Rez.Strings.TimeWindowLabel) as String,
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_SMALL,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_BOTTOM
+        });
+
+        Picker.initialize({
+            :title => title,
+            :pattern => [factory] as Array<PickerFactory or Drawable>,
+            :defaults => [defaultIndex] as Array<Number>
+        });
+    }
+}
+
+//! Delegate for handling time window picker selections
+class TimeWindowPickerDelegate extends WatchUi.PickerDelegate {
+
+    //! Constructor
+    function initialize() {
+        PickerDelegate.initialize();
+    }
+
+    //! Handle picker confirmation
+    //! @param values Array of selected values from each picker column
+    //! @return true if handled
+    function onAccept(values as Array) as Boolean {
+        var value = values[0] as Number;
+
+        // Validate range
+        if (value < 30) { value = 30; }
+        if (value > 120) { value = 120; }
+
+        // Save to properties
+        try {
+            Properties.setValue("timeWindow", value);
+            System.println("SitLess: Time window set to " + value);
+        } catch (e) {
+            System.println("SitLess: Failed to save time window");
         }
 
         // Pop back to widget (picker + menu)

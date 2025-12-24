@@ -236,45 +236,51 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 - [x] Po zapisie widget wyświetla nową wartość
 - [x] Test na prawdziwym urządzeniu (FR 255)
 
-### Krok 3.3: Dodanie ustawienia timeWindow ⏳ NASTĘPNY
-**Cel:** Drugie ustawienie - okno czasowe
+### Krok 3.3: Dodanie ustawienia timeWindow ✅ UKOŃCZONE
+**Cel:** Drugie ustawienie - okno czasowe (dostępne w GCM i na zegarku)
 
-**Modyfikacje:**
-1. `resources/settings/settings.xml` - dodać (w sekcji `<properties>`):
-```xml
-<property id="timeWindow" type="number">60</property>
-```
-
-2. `resources/settings/settings.xml` - dodać:
-```xml
-<setting propertyKey="@Properties.timeWindow" title="@Strings.timeWindowTitle">
-    <settingConfig type="numeric" min="30" max="120" />
-</setting>
-```
-
-3. `resources/strings/strings.xml` - dodać:
-```xml
-<string id="timeWindowTitle">Time Window (min)</string>
-```
+**Co zostało zrobione:**
+1. `resources/settings/settings.xml` - dodano property `timeWindow` (domyślna wartość: 60)
+2. `resources/settings/settings.xml` - dodano setting z zakresem 30-120 minut
+3. `resources/strings/strings.xml` - dodano `timeWindowTitle`
 
 **Test weryfikacyjny:**
-- [ ] Dwa pola widoczne: "Step Goal" i "Time Window (min)"
-- [ ] Domyślne wartości: 50 i 60
+- [x] Dwa pola widoczne w GCM: "Step Goal" i "Time Window (min)"
+- [x] Domyślne wartości: 50 i 60
 
-### Krok 3.4: Odczyt timeWindow w sitlessView
+### Krok 3.3a: Menu Time Window na zegarku ✅ UKOŃCZONE
+**Cel:** Dodać Time Window do menu ustawień na zegarku
+
+**ZASADA:** Każde nowe ustawienie musi być od razu dostępne również z poziomu menu na zegarku (długie przytrzymanie UP).
+
+**Co zostało zrobione:**
+1. `resources/strings/strings.xml` - dodano string `TimeWindowLabel`
+2. `source/SitlessInputDelegate.mc` - dodano element menu dla Time Window + metodę `getTimeWindow()`
+3. `source/SitlessSettingsMenu.mc` - dodano obsługę Time Window:
+   - Rozszerzono `onSelect()` o `:timeWindow`
+   - Dodano `openTimeWindowPicker()` i `getTimeWindow()`
+   - Dodano klasy `TimeWindowPicker` i `TimeWindowPickerDelegate`
+4. Ujednolicono obsługę błędów - wszystkie bloki catch używają `System.println()` z kontekstem
+
+**Test weryfikacyjny:**
+- [x] Menu na zegarku pokazuje dwie opcje: "Step Goal" i "Time Window"
+- [x] Picker Time Window pokazuje wartości 30-120 (krok 10)
+- [x] Zmiana wartości jest zapisywana i widoczna w widgecie
+
+### Krok 3.4: Odczyt timeWindow w sitlessView ✅ UKOŃCZONE
 **Cel:** Użyć timeWindow w widoku
 
 **Plik:** `source/sitlessView.mc`
 
-**Zmiany:**
-1. Dodać metodę `getTimeWindow()` (analogicznie do `getMinSteps()`)
-2. Zastąpić `DEFAULT_WINDOW_MINUTES` wywołaniem `getTimeWindow()`
-3. Usunąć stałe `DEFAULT_WINDOW_MINUTES` i `DEFAULT_STEP_GOAL`
+**Co zostało zrobione:**
+1. Dodano metodę `getTimeWindow()` (analogicznie do `getMinSteps()`)
+2. Zastąpiono `DEFAULT_WINDOW_MINUTES` wywołaniem `getTimeWindow()`
+3. Usunięto stałą `DEFAULT_WINDOW_MINUTES`
 
 **Test weryfikacyjny:**
-- [ ] Widget wyświetla "last 60 min"
-- [ ] Zmień timeWindow na 90
-- [ ] Po ponownym otwarciu wyświetla "last 90 min"
+- [x] Widget wyświetla "last 60 min"
+- [x] Zmień timeWindow na 90
+- [x] Po ponownym otwarciu wyświetla "last 90 min"
 
 ### Krok 3.5: Dodanie ustawień startHour i endHour
 **Cel:** Godziny aktywności (do przyszłego użycia w alertach Faza 5)

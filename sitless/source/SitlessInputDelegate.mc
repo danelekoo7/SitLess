@@ -21,6 +21,12 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             :stepGoal,
             {}
         ));
+        menu.addItem(new WatchUi.MenuItem(
+            WatchUi.loadResource(Rez.Strings.TimeWindowLabel) as String,
+            getTimeWindow().toString() + " min",
+            :timeWindow,
+            {}
+        ));
         WatchUi.pushView(menu, new SitlessMenuDelegate(), WatchUi.SLIDE_UP);
         return true;
     }
@@ -34,8 +40,22 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
                 return value as Number;
             }
         } catch (e) {
-            // Fall through to default
+            System.println("SitLess: Error reading minSteps in delegate");
         }
         return 50;
+    }
+
+    //! Read current timeWindow value from Properties
+    //! @return current time window value in minutes
+    private function getTimeWindow() as Number {
+        try {
+            var value = Application.Properties.getValue("timeWindow");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading timeWindow in delegate");
+        }
+        return 60;
     }
 }
