@@ -6,9 +6,6 @@ import Toybox.Lang;
 import Toybox.Application.Properties;
 
 class sitlessView extends WatchUi.View {
-    // Default time window in minutes
-    private const DEFAULT_WINDOW_MINUTES = 60;
-
     // Visibility flag for performance optimization
     private var _isVisible as Boolean = false;
 
@@ -42,7 +39,8 @@ class sitlessView extends WatchUi.View {
 
         // Get steps in rolling window from buffer
         var stepBuffer = getApp().getStepBuffer();
-        var windowSteps = stepBuffer.getStepsInWindow(DEFAULT_WINDOW_MINUTES);
+        var timeWindow = getTimeWindow();
+        var windowSteps = stepBuffer.getStepsInWindow(timeWindow);
         var sampleCount = stepBuffer.getSampleCount();
 
         var centerX = dc.getWidth() / 2;
@@ -104,9 +102,9 @@ class sitlessView extends WatchUi.View {
             }
         }
 
-        // 4. Label "last 60 min" (bottom, small gray font)
+        // 4. Label "last X min" (bottom, small gray font)
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        var labelText = "last " + DEFAULT_WINDOW_MINUTES + " min";
+        var labelText = "last " + timeWindow + " min";
         if (!hasData) {
             labelText += " (" + sampleCount + " samples)";
         }
@@ -144,6 +142,19 @@ class sitlessView extends WatchUi.View {
             System.println("SitLess: Error reading minSteps");
         }
         return 50;
+    }
+
+    // Read timeWindow setting from Properties
+    private function getTimeWindow() as Number {
+        try {
+            var value = Properties.getValue("timeWindow");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading timeWindow");
+        }
+        return 60;
     }
 
 }
