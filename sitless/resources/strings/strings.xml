@@ -1,12 +1,19 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">sitless</string>
+    <string id="notificationsEnabledTitle">Notifications</string>
     <string id="minStepsTitle">Step Goal</string>
     <string id="timeWindowTitle">Time Window (min)</string>
     <string id="startHourTitle">Active Hours Start</string>
     <string id="endHourTitle">Active Hours End</string>
     <string id="SettingsTitle">Settings</string>
+    <string id="NotificationsLabel">Notifications</string>
     <string id="StepGoalLabel">Step Goal</string>
     <string id="TimeWindowLabel">Time Window</string>
     <string id="StartHourLabel">Start Hour</string>
     <string id="EndHourLabel">End Hour</string>
+    <string id="On">On</string>
+    <string id="Off">Off</string>
+    <string id="DailySteps">Daily</string>
+    <string id="LastMinutes">last %d min</string>
+    <string id="Samples">samples</string>
 </strings>

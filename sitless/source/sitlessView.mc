@@ -59,11 +59,12 @@ class sitlessView extends WatchUi.View {
 
         // 1. Daily steps (top, small gray font)
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        var dailyLabel = WatchUi.loadResource(Rez.Strings.DailySteps) as String;
         dc.drawText(
             centerX,
             centerY - 50,
             Graphics.FONT_SMALL,
-            "Daily: " + dailySteps,
+            dailyLabel + ": " + dailySteps,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
 
@@ -103,9 +104,16 @@ class sitlessView extends WatchUi.View {
 
         // 4. Label "last X min" (bottom, small gray font)
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        var labelText = "last " + timeWindow + " min";
+        var lastMinLabel = WatchUi.loadResource(Rez.Strings.LastMinutes) as String;
+        var samplesLabel = WatchUi.loadResource(Rez.Strings.Samples) as String;
+        // Replace %d placeholder with actual value
+        var labelText = lastMinLabel;
+        var percentDPos = labelText.find("%d");
+        if (percentDPos != null) {
+            labelText = labelText.substring(0, percentDPos) + timeWindow.toString() + labelText.substring(percentDPos + 2, labelText.length());
+        }
         if (!hasData) {
-            labelText += " (" + sampleCount + " samples)";
+            labelText += " (" + sampleCount + " " + samplesLabel + ")";
         }
         dc.drawText(
             centerX,

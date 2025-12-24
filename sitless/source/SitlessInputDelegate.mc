@@ -15,6 +15,13 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
     //! @return true if handled
     function onMenu() as Boolean {
         var menu = new WatchUi.Menu2({:title => WatchUi.loadResource(Rez.Strings.SettingsTitle) as String});
+        menu.addItem(new WatchUi.ToggleMenuItem(
+            WatchUi.loadResource(Rez.Strings.NotificationsLabel) as String,
+            {:enabled => WatchUi.loadResource(Rez.Strings.On) as String, :disabled => WatchUi.loadResource(Rez.Strings.Off) as String},
+            :notifications,
+            getNotificationsEnabled(),
+            {}
+        ));
         menu.addItem(new WatchUi.MenuItem(
             WatchUi.loadResource(Rez.Strings.StepGoalLabel) as String,
             getMinSteps().toString(),
@@ -102,5 +109,19 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             System.println("SitLess: Error reading endHour in delegate");
         }
         return 21;
+    }
+
+    //! Read current notificationsEnabled value from Properties
+    //! @return true if notifications are enabled
+    private function getNotificationsEnabled() as Boolean {
+        try {
+            var value = Application.Properties.getValue("notificationsEnabled");
+            if (value != null && value instanceof Boolean) {
+                return value as Boolean;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading notificationsEnabled in delegate");
+        }
+        return true;
     }
 }

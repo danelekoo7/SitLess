@@ -16,7 +16,20 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
     //! @param item The selected menu item
     function onSelect(item as WatchUi.MenuItem) as Void {
         var id = item.getId();
-        if (id == :stepGoal) {
+        if (id == :notifications) {
+            // Toggle is handled automatically by ToggleMenuItem
+            // We just need to save the new value
+            if (item instanceof WatchUi.ToggleMenuItem) {
+                var toggleItem = item as WatchUi.ToggleMenuItem;
+                var newValue = toggleItem.isEnabled();
+                try {
+                    Properties.setValue("notificationsEnabled", newValue);
+                    System.println("SitLess: Notifications " + (newValue ? "enabled" : "disabled"));
+                } catch (e) {
+                    System.println("SitLess: Failed to save notifications setting");
+                }
+            }
+        } else if (id == :stepGoal) {
             openStepGoalPicker();
         } else if (id == :timeWindow) {
             openTimeWindowPicker();

@@ -7,10 +7,25 @@ import Toybox.System;
 (:typecheck(disableBackgroundCheck))
 module SettingsManager {
     // Default values
+    const DEFAULT_NOTIFICATIONS_ENABLED = true;
     const DEFAULT_MIN_STEPS = 50;
     const DEFAULT_TIME_WINDOW = 60;
     const DEFAULT_START_HOUR = 7;
     const DEFAULT_END_HOUR = 21;
+
+    //! Get notifications enabled setting
+    //! @return true if notifications are enabled
+    function getNotificationsEnabled() as Boolean {
+        try {
+            var value = Properties.getValue("notificationsEnabled");
+            if (value != null && value instanceof Boolean) {
+                return value as Boolean;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading notificationsEnabled");
+        }
+        return DEFAULT_NOTIFICATIONS_ENABLED;
+    }
 
     //! Get minimum steps goal
     //! @return step goal value (10-500)

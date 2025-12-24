@@ -1,12 +1,19 @@
 <strings>
     <string id="AppName">sitless</string>
+    <string id="notificationsEnabledTitle">Powiadomienia</string>
     <string id="minStepsTitle">Cel kroków</string>
     <string id="timeWindowTitle">Okno czasowe (min)</string>
     <string id="startHourTitle">Początek aktywności</string>
     <string id="endHourTitle">Koniec aktywności</string>
     <string id="SettingsTitle">Ustawienia</string>
+    <string id="NotificationsLabel">Powiadomienia</string>
     <string id="StepGoalLabel">Cel kroków</string>
     <string id="TimeWindowLabel">Okno czasowe</string>
     <string id="StartHourLabel">Godz. początku</string>
     <string id="EndHourLabel">Godz. końca</string>
+    <string id="On">Wł.</string>
+    <string id="Off">Wył.</string>
+    <string id="DailySteps">Dziennie</string>
+    <string id="LastMinutes">ostatnie %d min</string>
+    <string id="Samples">próbek</string>
 </strings>

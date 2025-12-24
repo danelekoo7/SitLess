@@ -11,6 +11,11 @@ SitLess is a Garmin Connect IQ widget that provides gentle move reminders by mon
 **Min API Level:** 3.2.0
 **Supported Languages:** English, Polish
 
+## Project Documentation
+
+Implementation plan and detailed development notes are located in the parent folder:
+- `../AI/implementation-plan.md` - Step-by-step implementation guide with checkpoints
+
 ## Development Commands
 
 ### Building and Testing
