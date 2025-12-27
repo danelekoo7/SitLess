@@ -2,6 +2,8 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.System;
+import Toybox.Activity;
+import Toybox.Sensor;
 
 //! Module responsible for alert decision logic
 //! Determines whether an alert should be triggered based on step count and settings
@@ -23,7 +25,12 @@ module AlertManager {
             return false;
         }
 
-        // 3. Check if steps are below threshold
+        // 3. Check exclusion conditions (DND, activity in progress, sleep mode)
+        if (isExcludedByConditions()) {
+            return false;
+        }
+
+        // 4. Check if steps are below threshold
         var minSteps = SettingsManager.getMinSteps();
         var shouldTrigger = stepsInWindow < minSteps;
 
@@ -32,6 +39,52 @@ module AlertManager {
         }
 
         return shouldTrigger;
+    }
+
+    //! Checks if any exclusion condition is active that should block alerts
+    //! @return true if alerts should be blocked, false if alerts are allowed
+    function isExcludedByConditions() as Boolean {
+        var deviceSettings = System.getDeviceSettings();
+
+        // 1. Check Do Not Disturb mode
+        if (deviceSettings.doNotDisturb) {
+            System.println("SitLess: Alert blocked - Do Not Disturb is active");
+            return true;
+        }
+
+        // 2. Check if activity recording is in progress
+        var activityInfo = Activity.getActivityInfo();
+        if (activityInfo != null) {
+            var timerState = activityInfo.timerState;
+            // TIMER_STATE_OFF (0) means no active recording
+            // Any other state (ON=3, STOPPED=1, PAUSED=2) means activity in progress
+            if (timerState != null && timerState != Activity.TIMER_STATE_OFF) {
+                System.println("SitLess: Alert blocked - activity recording in progress (timerState: " + timerState + ")");
+                return true;
+            }
+        }
+
+        // 3. Check sleep mode (if available on device)
+        // Note: Sleep mode detection via System.getDeviceSettings() is limited
+        // Some devices expose this through different APIs
+        if (deviceSettings has :isSleepModeEnabled) {
+            if (deviceSettings.isSleepModeEnabled) {
+                System.println("SitLess: Alert blocked - sleep mode is active");
+                return true;
+            }
+        }
+
+        // 4. Check if watch is off-wrist using HR sensor (best effort)
+        // If HR sensor returns null, the watch is likely not on the wrist
+        // This helps avoid alerts while charging or when watch is on a desk
+        // Note: HR may also be null briefly when sensor is "warming up"
+        var sensorInfo = Sensor.getInfo();
+        if (sensorInfo != null && sensorInfo.heartRate == null) {
+            System.println("SitLess: Alert blocked - likely off-wrist (no HR reading)");
+            return true;
+        }
+
+        return false;
     }
 
     //! Checks if current time is within configured active hours

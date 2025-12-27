@@ -210,9 +210,9 @@ function onUpdate(dc as Dc) as Void {
 Do NOT send alerts when:
 1. Notifications are disabled: `SettingsManager.getNotificationsEnabled()` returns false
 2. Do Not Disturb is enabled: `System.getDeviceSettings().doNotDisturb`
-3. Sleep mode is active
-4. Activity in progress: check `ActivityMonitor.getInfo().activityClass`
-5. Watch is off-wrist
+3. Sleep mode is active: `deviceSettings.isSleepModeEnabled` (if available on device)
+4. Activity recording in progress: `Activity.getActivityInfo().timerState != TIMER_STATE_OFF`
+5. Watch is off-wrist (best effort): `Sensor.getInfo().heartRate == null` - helps avoid alerts while charging
 
 ## Memory and Battery Constraints
 
@@ -278,11 +278,13 @@ The manifest.xml must include:
 ```xml
 <iq:permissions>
     <iq:uses-permission id="Background"/>
+    <iq:uses-permission id="Sensor"/>
 </iq:permissions>
 ```
 
 **Why these permissions:**
 - `Background` - Allows periodic background service for step monitoring
+- `Sensor` - Required for off-wrist detection via HR sensor (used to avoid alerts while charging)
 
 **Note:** `ActivityMonitor` API does not require any special permissions - it's available directly as part of the Connect IQ API. The `FitContributor` permission is only needed for *writing* data to FIT files, not for reading step counts.
 

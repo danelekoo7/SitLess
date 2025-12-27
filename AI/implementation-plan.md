@@ -504,18 +504,32 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
 - [x] `shouldAlert()` zwraca false poza godzinami
 - [x] Aplikacja kompiluje się bez błędów
 
-### Krok 5.2: Implementacja exclusions
+### Krok 5.2: Implementacja exclusions ✅ UKOŃCZONE
 **Cel:** Blokowanie alertów w nieodpowiednich momentach
 
-**Zadania:**
-1. Sprawdź DND: `System.getDeviceSettings().doNotDisturb`
-2. Sprawdź aktywność: `ActivityMonitor.getInfo().activityClass`
-3. Sprawdź sleep mode (jeśli dostępne w API)
-4. Sprawdź off-wrist (jeśli dostępne)
+**Plik:** `source/AlertManager.mc`, `manifest.xml`
+
+**Co zostało zrobione:**
+1. Dodano metodę `isExcludedByConditions()` sprawdzającą:
+   - Do Not Disturb: `System.getDeviceSettings().doNotDisturb`
+   - Aktywność w toku: `Activity.getActivityInfo().timerState` (TIMER_STATE_OFF = brak aktywności)
+   - Sleep mode: `deviceSettings.isSleepModeEnabled` (jeśli dostępne na urządzeniu)
+   - Off-wrist (best effort): `Sensor.getInfo().heartRate == null` - blokuje alerty gdy zegarek nie jest założony (np. podczas ładowania)
+2. Zintegrowano z `shouldAlert()` - sprawdzenie wykonywane po weryfikacji godzin aktywności
+3. Logowanie dla debugowania (który warunek zablokował alert)
+4. Dodano uprawnienie `Sensor` do `manifest.xml`
+
+**UWAGA - API:**
+- `ActivityMonitor.getInfo().activityClass` to ustawienie profilu użytkownika (0-10), NIE wskaźnik aktywności
+- Do sprawdzenia czy aktywność jest nagrywana używamy `Activity.getActivityInfo().timerState`
+- `TIMER_STATE_OFF (0)` = brak aktywności, inne wartości (ON=3, STOPPED=1, PAUSED=2) = aktywność w toku
+- Connect IQ nie udostępnia bezpośredniego API on-wrist/off-wrist - używamy HR sensor jako proxy (best effort)
 
 **Test weryfikacyjny:**
-- [ ] Włącz DND w symulatorze → alert nie pojawia się
-- [ ] Rozpocznij aktywność → alert nie pojawia się
+- [x] Włącz DND w symulatorze → alert nie pojawia się
+- [x] Rozpocznij aktywność → alert nie pojawia się
+- [x] Zegarek zdjęty z ręki (brak HR) → alert nie pojawia się
+- [x] Aplikacja kompiluje się bez błędów
 
 ### Krok 5.3: Wysyłanie wibracji
 **Cel:** Powiadomienie haptyczne
