@@ -143,7 +143,7 @@ Ten dokument zawiera szczegółowy, krokowy plan implementacji aplikacji SitLess
 
 ---
 
-## Faza 3: Ustawienia użytkownika ⏳ W TRAKCIE
+## Faza 3: Ustawienia użytkownika ✅ UKOŃCZONE
 
 **Filozofia:** Małe, testowalne kroki. Najpierw UI ustawień, potem integracja z logiką.
 
@@ -298,15 +298,16 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 - [x] Domyślne wartości: 50, 60, 7, 21
 - [x] Picker godzin pokazuje wartości 0:00 - 23:00
 
-### Krok 3.5a: Dodanie ustawienia notificationsEnabled ⏳ DO ZROBIENIA
+### Krok 3.5a: Dodanie ustawienia notificationsEnabled ✅ UKOŃCZONE
 **Cel:** Umożliwić użytkownikowi wyłączenie powiadomień (dla osób preferujących tylko podgląd danych)
 
-**Pliki do modyfikacji:**
-1. `resources/settings/settings.xml` - dodać property `notificationsEnabled` typu Boolean (domyślnie: true)
-2. `resources/strings/strings.xml` - dodać stringi `notificationsEnabledTitle`, `NotificationsLabel`
-3. `resources-pol/strings/strings.xml` - dodać polskie tłumaczenia
-4. `source/SitlessInputDelegate.mc` - dodać element menu Toggle dla powiadomień
-5. `source/SettingsManager.mc` - dodać metodę `getNotificationsEnabled()`
+**Co zostało zrobione:**
+1. `resources/settings/settings.xml` - dodano property `notificationsEnabled` typu Boolean (domyślnie: true) oraz setting toggle
+2. `resources/strings/strings.xml` - dodano stringi `notificationsEnabledTitle`, `NotificationsLabel`, `On`, `Off`
+3. `resources-pol/strings/strings.xml` - dodano polskie tłumaczenia
+4. `source/SitlessInputDelegate.mc` - dodano ToggleMenuItem w menu zegarka
+5. `source/SitlessSettingsMenu.mc` - dodano obsługę zapisu toggle w `onSelect()`
+6. `source/SettingsManager.mc` - dodano metodę `getNotificationsEnabled()`
 
 **Implementacja:**
 - Typ: Boolean toggle (ON/OFF)
@@ -315,9 +316,9 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 - Widget i Glance nadal wyświetlają dane o krokach
 
 **Test weryfikacyjny:**
-- [ ] Toggle widoczny w ustawieniach (GCM i menu zegarka)
-- [ ] Domyślna wartość: ON (true)
-- [ ] `SettingsManager.getNotificationsEnabled()` zwraca poprawną wartość
+- [x] Toggle widoczny w ustawieniach (GCM i menu zegarka)
+- [x] Domyślna wartość: ON (true)
+- [x] `SettingsManager.getNotificationsEnabled()` zwraca poprawną wartość
 
 ### Krok 3.6: Utworzenie modułu SettingsManager ✅ UKOŃCZONE
 **Cel:** Centralizacja odczytu ustawień (DRY)
@@ -676,7 +677,7 @@ Faza 4: Background Service ✅
     └── 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6
 
 Faza 3: Ustawienia ✅
-    └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ✅ → 3.3a ✅ → 3.4 ✅ → 3.5 ✅ → 3.6 ✅ → 3.7 ✅ → 3.8 ✅ → 3.9 ✅ → 3.10 ✅
+    └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ✅ → 3.3a ✅ → 3.4 ✅ → 3.5 ✅ → 3.5a ✅ → 3.6 ✅ → 3.7 ✅ → 3.8 ✅ → 3.9 ✅ → 3.10 ✅
 
 Faza 5: Alerty
     └── 5.1 → 5.2 → 5.3 → 5.4
