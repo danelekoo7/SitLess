@@ -61,11 +61,11 @@ This project uses the Visual Studio Code Connect IQ extension. Use the following
 - `source/SitlessInputDelegate.mc` - Input handling and settings menu access
 - `source/SitlessSettingsMenu.mc` - Settings menu delegates and pickers
 - `source/SettingsManager.mc` - Centralized settings access
+- `source/AlertManager.mc` - Alert decision logic (checks notifications, active hours, step threshold)
 - `resources/settings/settings.xml` - Settings UI definition (properties + settings combined)
 
 **Planned Components** (not yet implemented):
 - `source/SitlessGlanceView.mc` - Glance view for quick status
-- `source/AlertManager.mc` - Alert logic and exclusion conditions
 
 ### Resource Structure
 

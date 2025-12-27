@@ -483,22 +483,26 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
 
 ## Faza 5: Logika alertów
 
-### Krok 5.1: Sprawdzanie warunków alertu
+### Krok 5.1: Sprawdzanie warunków alertu ✅ UKOŃCZONE
 **Cel:** Logika decyzyjna dla powiadomień
 
 **Nowy plik:** `source/AlertManager.mc`
 
-**Zadania:**
-1. Metoda `shouldAlert()` sprawdzająca:
-   - **Czy powiadomienia są włączone** (`SettingsManager.getNotificationsEnabled()`) — jeśli wyłączone, natychmiast zwróć false
+**Co zostało zrobione:**
+1. Utworzono moduł `AlertManager` z metodami:
+   - `shouldAlert(stepsInWindow)` - główna logika decyzyjna
+   - `isWithinActiveHours()` - sprawdzanie godzin aktywności
+2. Logika sprawdza:
+   - Czy powiadomienia są włączone (`SettingsManager.getNotificationsEnabled()`)
+   - Czy jesteśmy w godzinach aktywności (obsługuje też zakres "przez północ")
    - Czy kroki < minSteps
-   - Czy jesteśmy w godzinach aktywności
-2. Na razie bez exclusions (DND, sleep, etc.)
+3. Logowanie dla debugowania
 
 **Test weryfikacyjny:**
-- [ ] `shouldAlert()` zwraca false gdy `notificationsEnabled` = false (niezależnie od innych warunków)
-- [ ] `shouldAlert()` zwraca true gdy kroki < cel w godzinach aktywności (i powiadomienia włączone)
-- [ ] `shouldAlert()` zwraca false poza godzinami
+- [x] `shouldAlert()` zwraca false gdy `notificationsEnabled` = false (niezależnie od innych warunków)
+- [x] `shouldAlert()` zwraca true gdy kroki < cel w godzinach aktywności (i powiadomienia włączone)
+- [x] `shouldAlert()` zwraca false poza godzinami
+- [x] Aplikacja kompiluje się bez błędów
 
 ### Krok 5.2: Implementacja exclusions
 **Cel:** Blokowanie alertów w nieodpowiednich momentach
