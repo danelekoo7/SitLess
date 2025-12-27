@@ -56,8 +56,10 @@ class sitlessApp extends Application.AppBase {
     (:typecheck(disableBackgroundCheck))
     private function syncSettingsToStorage() as Void {
         var bufferSize = SettingsManager.getRequiredBufferSize();
+        var timeWindow = SettingsManager.getTimeWindow();
         Storage.setValue("maxSamples", bufferSize);
-        System.println("SitLess: Synced maxSamples=" + bufferSize);
+        Storage.setValue("timeWindow", timeWindow);
+        System.println("SitLess: Synced maxSamples=" + bufferSize + ", timeWindow=" + timeWindow);
     }
 
     // Return the service delegate for background processing
@@ -72,6 +74,13 @@ class sitlessApp extends Application.AppBase {
             var dict = data as Dictionary;
             var stepsValue = dict["steps"] as Number;
             System.println("SitLess: Received background data - steps=" + stepsValue.toString());
+
+            // Check if alert should be triggered (vibration must happen in foreground)
+            var shouldAlert = dict["shouldAlert"];
+            if (shouldAlert != null && shouldAlert instanceof Boolean && shouldAlert as Boolean) {
+                AlertManager.triggerAlert();
+            }
+
             // Reload buffer from storage to get latest data
             loadStepBufferFromStorage();
             // Request UI update to show new data

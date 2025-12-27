@@ -531,28 +531,47 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
 - [x] Zegarek zdjęty z ręki (brak HR) → alert nie pojawia się
 - [x] Aplikacja kompiluje się bez błędów
 
-### Krok 5.3: Wysyłanie wibracji
-**Cel:** Powiadomienie haptyczne
+### Krok 5.3 + 5.4: Wysyłanie alertów ✅ UKOŃCZONE
+**Cel:** Powiadomienie użytkownika gdy kroki < cel
 
-**Zadania:**
-1. Użyj `Attention.vibrate()`
-2. Zdefiniuj wzór wibracji (krótki, delikatny)
+**UWAGA - Ograniczenia Connect IQ:**
+- `Attention.vibrate()` NIE jest dostępne w background service
+- Background service może tylko wywołać `Background.requestApplicationWake()`
+- Wibracja możliwa tylko w kontekście foreground (gdy aplikacja jest aktywna)
+
+**Implementacja:**
+
+1. **AlertManager.mc** - dodano metodę `triggerAlert()`:
+   - Delikatny wzór wibracji: 2 impulsy (50% siły, 200ms) z pauzą 100ms
+   - Adnotacja `(:typecheck(disableBackgroundCheck))` - wyłącza sprawdzanie background context
+   - Sprawdzenie dostępności `Attention.vibrate` na urządzeniu
+
+2. **SitlessServiceDelegate.mc** - dodano logikę alertów w `onTemporalEvent()`:
+   - Metoda `calculateStepsInWindow()` oblicza kroki w oknie czasowym
+   - Gdy `AlertManager.shouldAlert()` zwraca true → `Background.requestApplicationWake("Time to move!")`
+   - Flaga `shouldAlert` przekazywana przez `Background.exit()` do głównej aplikacji
+
+3. **sitlessApp.mc** - rozszerzono `onBackgroundData()`:
+   - Odbiera flagę `shouldAlert` z background service
+   - Wywołuje `AlertManager.triggerAlert()` (wibracja) gdy flaga = true
+   - Sync `timeWindow` do Storage dla background service
+
+**Jak to działa:**
+1. Background service co ~5 min sprawdza kroki
+2. Jeśli kroki < cel → `requestApplicationWake("Time to move!")`
+3. Użytkownik widzi powiadomienie z opcją otwarcia widgetu
+4. Na niektórych urządzeniach towarzyszy temu ton/wibracja
+5. Jeśli widget był otwarty lub użytkownik go otworzy → wibracja przez `triggerAlert()`
+
+**Ograniczenia:**
+- Komunikat "Time to move!" nie jest zlokalizowany (background nie ma dostępu do zasobów)
+- Wibracja/ton przy `requestApplicationWake()` zależy od urządzenia (nie gwarantowane)
 
 **Test weryfikacyjny:**
-- [ ] Wibracja jest wyzwalana gdy kroki < cel
-- [ ] Wibracja nie jest zbyt agresywna
-
-### Krok 5.4: Wyświetlanie komunikatu alertu
-**Cel:** Wizualne powiadomienie
-
-**Zadania:**
-1. Utwórz widok alertu lub użyj notification API
-2. Wyświetl komunikat "Time to move!" lub podobny
-3. Dodaj tłumaczenia (EN/PL)
-
-**Test weryfikacyjny:**
-- [ ] Komunikat pojawia się razem z wibracją
-- [ ] Komunikat jest w języku ustawionym na zegarku
+- [x] `requestApplicationWake()` wyświetla powiadomienie gdy kroki < cel
+- [x] Wibracja działa gdy widget jest otwarty
+- [x] Wzór wibracji jest delikatny (50% siły)
+- [x] Aplikacja kompiluje się bez błędów
 
 ---
 
@@ -697,8 +716,8 @@ Faza 4: Background Service ✅
 Faza 3: Ustawienia ✅
     └── 3.1 ✅ → 3.2 ✅ → 3.2a ✅ → 3.3 ✅ → 3.3a ✅ → 3.4 ✅ → 3.5 ✅ → 3.5a ✅ → 3.6 ✅ → 3.7 ✅ → 3.8 ✅ → 3.9 ✅ → 3.10 ✅
 
-Faza 5: Alerty
-    └── 5.1 → 5.2 → 5.3 → 5.4
+Faza 5: Alerty ✅
+    └── 5.1 ✅ → 5.2 ✅ → 5.3+5.4 ✅
 
 Faza 6: Snooze
     └── 6.1 → 6.2
@@ -723,8 +742,8 @@ Faza 9: Finalizacja
 | **CP2** | Faza 2 | Pełny UI widgetu z paskiem postępu | ✅ |
 | **CP3** | Faza 4 | Background service zbiera dane w tle | ✅ |
 | **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | ✅ |
-| **CP5** | Faza 5 | Alerty wibracyjne działają | ⏳ NASTĘPNY |
-| **CP6** | Faza 6 | Snooze działa | |
+| **CP5** | Faza 5 | Alerty wibracyjne działają | ✅ |
+| **CP6** | Faza 6 | Snooze działa | ⏳ NASTĘPNY |
 | **CP7** | Faza 7 | Glance view pokazuje status | |
 | **CP8** | Faza 8 | Aplikacja jest zoptymalizowana | |
 | **CP9** | Faza 9 | Gotowe do publikacji | |

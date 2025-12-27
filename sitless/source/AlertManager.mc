@@ -4,9 +4,12 @@ import Toybox.Time.Gregorian;
 import Toybox.System;
 import Toybox.Activity;
 import Toybox.Sensor;
+import Toybox.Attention;
 
 //! Module responsible for alert decision logic
 //! Determines whether an alert should be triggered based on step count and settings
+//! Note: shouldAlert() can run in background context, but triggerAlert() must run in foreground
+(:background)
 module AlertManager {
 
     //! Determines if an alert should be triggered
@@ -103,6 +106,29 @@ module AlertManager {
         } else {
             // Overnight range: active if currentHour >= start OR < end
             return currentHour >= startHour || currentHour < endHour;
+        }
+    }
+
+    //! Triggers a gentle vibration alert
+    //! Uses a soft pattern: two short pulses with a pause between them
+    //! NOTE: This function must be called from foreground context only (not from background service)
+    //! The Attention API is not available in background context
+    (:typecheck(disableBackgroundCheck))
+    function triggerAlert() as Void {
+        // Check if Attention.vibrate is available on this device
+        if (Attention has :vibrate) {
+            // Gentle vibration pattern: short pulse, pause, short pulse
+            // 50% intensity to avoid being too aggressive
+            var vibeData = [
+                new Attention.VibeProfile(50, 200),  // 50% intensity, 200ms
+                new Attention.VibeProfile(0, 100),   // pause 100ms
+                new Attention.VibeProfile(50, 200)   // 50% intensity, 200ms
+            ] as Array<Attention.VibeProfile>;
+
+            Attention.vibrate(vibeData);
+            System.println("SitLess: Vibration alert triggered");
+        } else {
+            System.println("SitLess: Vibration not available on this device");
         }
     }
 

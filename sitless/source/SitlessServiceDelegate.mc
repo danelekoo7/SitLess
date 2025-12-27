@@ -58,19 +58,88 @@ class SitlessServiceDelegate extends System.ServiceDelegate {
         // Log for debugging (visible in simulator)
         System.println("SitLess BG: Added sample - steps=" + steps + ", samples=" + samples.size());
 
+        // Calculate steps in window and check if alert should be triggered
+        var stepsInWindow = calculateStepsInWindow(samples);
+        System.println("SitLess BG: Steps in window = " + stepsInWindow);
+
+        // Determine if alert should be triggered
+        var shouldTriggerAlert = false;
+        if (stepsInWindow >= 0) {
+            shouldTriggerAlert = AlertManager.shouldAlert(stepsInWindow);
+        }
+
+        // If alert should be triggered, request application wake
+        // This displays a notification asking user to open the app
+        // On some devices, this also triggers a tone/vibration
+        if (shouldTriggerAlert) {
+            System.println("SitLess BG: Requesting application wake");
+            Background.requestApplicationWake("Time to move!");
+        }
+
         // CRITICAL: Register next temporal event BEFORE exiting
         // Temporal events are one-shot - must re-register each time
         registerNextTemporalEvent();
 
         // Exit and pass data to main app
         // Data will be delivered to onBackgroundData() if app is active
+        // Include shouldAlert flag so foreground can trigger vibration (if app was already open)
         var result = {
             "steps" => steps as Application.PropertyValueType,
             "sampleCount" => samples.size() as Application.PropertyValueType,
-            "timestamp" => now.value() as Application.PropertyValueType
+            "timestamp" => now.value() as Application.PropertyValueType,
+            "shouldAlert" => shouldTriggerAlert as Application.PropertyValueType
         } as Dictionary<Application.PropertyKeyType, Application.PropertyValueType>;
 
         Background.exit(result as Application.PersistableType);
+    }
+
+    // Calculate steps taken within the configured time window
+    // Returns -1 if not enough samples to calculate
+    private function calculateStepsInWindow(samples as Array<Application.PropertyValueType>) as Number {
+        if (samples.size() < 2) {
+            return -1; // Not enough data
+        }
+
+        // Get time window from storage (set by main app from settings)
+        var timeWindowMinutes = 60; // default
+        var storedTimeWindow = Storage.getValue("timeWindow");
+        if (storedTimeWindow != null && storedTimeWindow instanceof Number) {
+            timeWindowMinutes = storedTimeWindow as Number;
+        }
+
+        var now = Time.now();
+        var windowStart = now.subtract(new Time.Duration(timeWindowMinutes * 60));
+        var windowStartValue = windowStart.value();
+
+        // Find oldest sample within window and newest sample
+        var oldestStepsInWindow = -1 as Number;
+        var newestSteps = -1 as Number;
+
+        for (var i = 0; i < samples.size(); i++) {
+            var sample = samples[i] as Dictionary<Application.PropertyKeyType, Application.PropertyValueType>;
+            var sampleTime = sample["time"] as Number;
+            var sampleSteps = sample["steps"] as Number;
+
+            if (sampleTime >= windowStartValue) {
+                if (oldestStepsInWindow < 0) {
+                    oldestStepsInWindow = sampleSteps;
+                }
+                newestSteps = sampleSteps;
+            }
+        }
+
+        if (oldestStepsInWindow < 0 || newestSteps < 0) {
+            return -1; // No samples in window
+        }
+
+        // Handle midnight reset (daily step count resets to 0)
+        var stepsInWindow = newestSteps - oldestStepsInWindow;
+        if (stepsInWindow < 0) {
+            // Midnight reset occurred, just use newest value
+            stepsInWindow = newestSteps;
+        }
+
+        return stepsInWindow;
     }
 
     // Register for next temporal event (5 minutes from now)
