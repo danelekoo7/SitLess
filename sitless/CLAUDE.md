@@ -149,6 +149,7 @@ Access via `Toybox.Application.Properties`
 - `Toybox.Time` - Time operations
 - `Toybox.Graphics` - Drawing
 - `Toybox.Lang` - Core types
+- `Toybox.SensorHistory` - Heart rate history for off-wrist detection
 
 ## Widget Lifecycle and Performance
 
@@ -212,7 +213,7 @@ Do NOT send alerts when:
 2. Do Not Disturb is enabled: `System.getDeviceSettings().doNotDisturb`
 3. Sleep mode is active: `deviceSettings.isSleepModeEnabled` (if available on device)
 4. Activity recording in progress: `Activity.getActivityInfo().timerState != TIMER_STATE_OFF`
-5. Watch is off-wrist (best effort): `Sensor.getInfo().heartRate == null` - helps avoid alerts while charging
+5. Watch is off-wrist: Uses `SensorHistory.getHeartRateHistory()` to check last 10 minutes of HR data. If there are 5+ samples and none have valid HR readings (all are 255/invalid), the watch is considered off-wrist. This is more reliable than instant HR check which often fails during sensor warmup.
 
 ## Memory and Battery Constraints
 
@@ -278,13 +279,13 @@ The manifest.xml must include:
 ```xml
 <iq:permissions>
     <iq:uses-permission id="Background"/>
-    <iq:uses-permission id="Sensor"/>
+    <iq:uses-permission id="SensorHistory"/>
 </iq:permissions>
 ```
 
 **Why these permissions:**
 - `Background` - Allows periodic background service for step monitoring
-- `Sensor` - Required for off-wrist detection via HR sensor (used to avoid alerts while charging)
+- `SensorHistory` - Required for off-wrist detection via HR history (used to avoid alerts while charging)
 
 **Note:** `ActivityMonitor` API does not require any special permissions - it's available directly as part of the Connect IQ API. The `FitContributor` permission is only needed for *writing* data to FIT files, not for reading step counts.
 

@@ -4,7 +4,8 @@ import Toybox.System;
 
 //! Centralized settings management module
 //! Provides type-safe access to all application settings with defaults and validation
-(:typecheck(disableBackgroundCheck))
+//! Must be available in background context for AlertManager to use
+(:background)
 module SettingsManager {
     // Default values
     const DEFAULT_NOTIFICATIONS_ENABLED = true;

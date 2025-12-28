@@ -1,8 +1,10 @@
+import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.WatchUi;
 import Toybox.ActivityMonitor;
 import Toybox.Time;
 import Toybox.Lang;
+import Toybox.System;
 
 class sitlessView extends WatchUi.View {
     // Visibility flag for performance optimization
@@ -17,7 +19,9 @@ class sitlessView extends WatchUi.View {
 
     function onShow() as Void {
         _isVisible = true;
-        // Add a sample when view becomes visible
+        // Reload step buffer from storage (populated by background service)
+        // Then add current sample
+        loadStepBufferFromStorage();
         addStepSample();
     }
 
@@ -135,6 +139,30 @@ class sitlessView extends WatchUi.View {
             var steps = info.steps as Number;
             var stepBuffer = getApp().getStepBuffer();
             stepBuffer.addSample(steps, Time.now());
+        }
+    }
+
+    // Load step buffer data from persistent storage (populated by background service)
+    private function loadStepBufferFromStorage() as Void {
+        var buffer = getApp().getStepBuffer();
+        var storedData = Application.Storage.getValue("stepBuffer");
+        if (storedData != null && storedData instanceof Array) {
+            var samples = storedData as Array<Dictionary>;
+            // Convert stored format (time as Number) to StepBuffer format (time as Moment)
+            var convertedSamples = [] as Array<Dictionary>;
+            for (var i = 0; i < samples.size(); i++) {
+                var sample = samples[i] as Dictionary;
+                var timeValue = sample["time"];
+                var steps = sample["steps"] as Number;
+                // Convert timestamp back to Moment
+                var timeMoment = new Time.Moment(timeValue as Number);
+                convertedSamples.add({
+                    "time" => timeMoment,
+                    "steps" => steps
+                } as Dictionary);
+            }
+            buffer.fromArray(convertedSamples);
+            System.println("SitLess View: Loaded " + convertedSamples.size() + " samples from storage");
         }
     }
 }

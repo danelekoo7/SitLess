@@ -3,8 +3,8 @@ import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.System;
 import Toybox.Activity;
-import Toybox.Sensor;
 import Toybox.Attention;
+import Toybox.SensorHistory;
 
 //! Module responsible for alert decision logic
 //! Determines whether an alert should be triggered based on step count and settings
@@ -77,17 +77,63 @@ module AlertManager {
             }
         }
 
-        // 4. Check if watch is off-wrist using HR sensor (best effort)
-        // If HR sensor returns null, the watch is likely not on the wrist
-        // This helps avoid alerts while charging or when watch is on a desk
-        // Note: HR may also be null briefly when sensor is "warming up"
-        var sensorInfo = Sensor.getInfo();
-        if (sensorInfo != null && sensorInfo.heartRate == null) {
-            System.println("SitLess: Alert blocked - likely off-wrist (no HR reading)");
+        // 4. Check if watch is off-wrist using heart rate history
+        // Use recent HR samples instead of instant reading - more reliable
+        // Instant HR is often null during sensor warmup, but history shows pattern
+        if (isLikelyOffWrist()) {
+            System.println("SitLess: Alert blocked - likely off-wrist (no recent HR)");
             return true;
         }
 
         return false;
+    }
+
+    //! Checks if watch is likely off-wrist based on heart rate history
+    //! More reliable than instant HR reading - looks for pattern of no readings
+    //! @return true if likely off-wrist, false otherwise
+    function isLikelyOffWrist() as Boolean {
+        // Check if SensorHistory is available on this device
+        if (!(Toybox has :SensorHistory)) {
+            return false; // Can't determine, assume on-wrist
+        }
+
+        if (!(SensorHistory has :getHeartRateHistory)) {
+            return false; // HR history not available
+        }
+
+        try {
+            // Get last 10 minutes of HR data
+            var hrIterator = SensorHistory.getHeartRateHistory({
+                :period => 10 * 60  // 10 minutes in seconds
+            });
+
+            // Count valid HR samples vs invalid (255 = no reading)
+            var validSamples = 0;
+            var totalSamples = 0;
+            var maxSamples = 20; // Check up to 20 samples
+
+            var sample = hrIterator.next();
+            while (sample != null && totalSamples < maxSamples) {
+                totalSamples++;
+                var hr = sample.data;
+                // HR of 255 means invalid/no reading, valid HR is typically 30-220
+                if (hr != null && hr != 255 && hr > 0) {
+                    validSamples++;
+                }
+                sample = hrIterator.next();
+            }
+
+            // If we have samples but none are valid, watch is likely off-wrist
+            // Need at least 5 samples to make a decision
+            if (totalSamples >= 5 && validSamples == 0) {
+                return true;
+            }
+
+            return false;
+        } catch (e) {
+            System.println("SitLess: Error checking HR history");
+            return false; // On error, assume on-wrist
+        }
     }
 
     //! Checks if current time is within configured active hours
