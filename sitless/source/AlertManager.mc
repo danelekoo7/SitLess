@@ -5,6 +5,7 @@ import Toybox.System;
 import Toybox.Activity;
 import Toybox.Attention;
 import Toybox.SensorHistory;
+import Toybox.Application.Storage;
 
 //! Module responsible for alert decision logic
 //! Determines whether an alert should be triggered based on step count and settings
@@ -22,18 +23,24 @@ module AlertManager {
             return false;
         }
 
-        // 2. Check if we're within active hours
+        // 2. Check if snooze is active
+        if (isInSnoozeMode()) {
+            System.println("SitLess: Alert skipped - snooze active");
+            return false;
+        }
+
+        // 3. Check if we're within active hours
         if (!isWithinActiveHours()) {
             System.println("SitLess: Alert skipped - outside active hours");
             return false;
         }
 
-        // 3. Check exclusion conditions (DND, activity in progress, sleep mode)
+        // 4. Check exclusion conditions (DND, activity in progress, sleep mode)
         if (isExcludedByConditions()) {
             return false;
         }
 
-        // 4. Check if steps are below threshold
+        // 5. Check if steps are below threshold
         var minSteps = SettingsManager.getMinSteps();
         var shouldTrigger = stepsInWindow < minSteps;
 
@@ -153,6 +160,52 @@ module AlertManager {
             // Overnight range: active if currentHour >= start OR < end
             return currentHour >= startHour || currentHour < endHour;
         }
+    }
+
+    //! Checks if snooze mode is currently active
+    //! @return true if snooze is active, false otherwise
+    function isInSnoozeMode() as Boolean {
+        try {
+            var snoozeUntil = Storage.getValue("snoozeUntil");
+            if (snoozeUntil != null && snoozeUntil instanceof Number) {
+                var now = Time.now().value();
+                return now < (snoozeUntil as Number);
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading snooze state");
+        }
+        return false;
+    }
+
+    //! Activates snooze mode for the configured duration
+    //! Saves the snooze end time to Storage
+    function activateSnooze() as Void {
+        var durationMinutes = SettingsManager.getSnoozeDuration();
+        var snoozeUntil = Time.now().value() + (durationMinutes * 60);
+        try {
+            Storage.setValue("snoozeUntil", snoozeUntil);
+            System.println("SitLess: Snooze activated for " + durationMinutes + " minutes");
+        } catch (e) {
+            System.println("SitLess: Error saving snooze state");
+        }
+    }
+
+    //! Gets the remaining snooze time in minutes
+    //! @return remaining minutes, or 0 if snooze is not active
+    function getSnoozeRemainingMinutes() as Number {
+        try {
+            var snoozeUntil = Storage.getValue("snoozeUntil");
+            if (snoozeUntil != null && snoozeUntil instanceof Number) {
+                var now = Time.now().value();
+                var remaining = (snoozeUntil as Number) - now;
+                if (remaining > 0) {
+                    return (remaining / 60) + 1;  // Round up
+                }
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading snooze remaining time");
+        }
+        return 0;
     }
 
     //! Triggers a gentle vibration alert

@@ -53,11 +53,17 @@ class sitlessView extends WatchUi.View {
         // Get step goal from settings
         var stepGoal = SettingsManager.getMinSteps();
 
-        // Determine color based on goal progress
+        // Check if snooze is active
+        var isSnoozeActive = AlertManager.isInSnoozeMode();
+        var snoozeRemaining = isSnoozeActive ? AlertManager.getSnoozeRemainingMinutes() : 0;
+
+        // Determine color based on goal progress and snooze status
         var hasData = windowSteps >= 0;
         var goalMet = hasData && windowSteps >= stepGoal;
         var progressColor = Graphics.COLOR_DK_GRAY;
-        if (hasData) {
+        if (isSnoozeActive) {
+            progressColor = Graphics.COLOR_ORANGE;
+        } else if (hasData) {
             progressColor = goalMet ? Graphics.COLOR_GREEN : Graphics.COLOR_RED;
         }
 
@@ -106,19 +112,30 @@ class sitlessView extends WatchUi.View {
             }
         }
 
-        // 4. Label "last X min" (bottom, small gray font)
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        var lastMinLabel = WatchUi.loadResource(Rez.Strings.LastMinutes) as String;
-        var samplesLabel = WatchUi.loadResource(Rez.Strings.Samples) as String;
-        // Replace %d placeholder with actual value
-        var labelText = lastMinLabel;
-        var percentDPos = labelText.find("%d");
-        if (percentDPos != null) {
-            labelText = labelText.substring(0, percentDPos) + timeWindow.toString() + labelText.substring(percentDPos + 2, labelText.length());
+        // 4. Label "last X min" or snooze status (bottom, small font)
+        var labelText;
+        var labelColor;
+        if (isSnoozeActive) {
+            // Show snooze status in orange
+            var snoozedLabel = WatchUi.loadResource(Rez.Strings.SnoozedLabel) as String;
+            labelText = snoozedLabel + " (" + snoozeRemaining + " min)";
+            labelColor = Graphics.COLOR_ORANGE;
+        } else {
+            // Show normal "last X min" label
+            var lastMinLabel = WatchUi.loadResource(Rez.Strings.LastMinutes) as String;
+            var samplesLabel = WatchUi.loadResource(Rez.Strings.Samples) as String;
+            // Replace %d placeholder with actual value
+            labelText = lastMinLabel;
+            var percentDPos = labelText.find("%d");
+            if (percentDPos != null) {
+                labelText = labelText.substring(0, percentDPos) + timeWindow.toString() + labelText.substring(percentDPos + 2, labelText.length());
+            }
+            if (!hasData) {
+                labelText += " (" + sampleCount + " " + samplesLabel + ")";
+            }
+            labelColor = Graphics.COLOR_LT_GRAY;
         }
-        if (!hasData) {
-            labelText += " (" + sampleCount + " " + samplesLabel + ")";
-        }
+        dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             centerX,
             centerY + 50,

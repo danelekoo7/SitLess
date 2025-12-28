@@ -13,6 +13,9 @@
     <string id="EndHourLabel">End Hour</string>
     <string id="On">On</string>
     <string id="Off">Off</string>
+    <string id="snoozeDurationTitle">Snooze Duration (min)</string>
+    <string id="SnoozeDurationLabel">Snooze Duration</string>
+    <string id="SnoozedLabel">Snoozed</string>
     <string id="DailySteps">Daily</string>
     <string id="LastMinutes">last %d min</string>
     <string id="Samples">samples</string>

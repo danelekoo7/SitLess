@@ -5,6 +5,7 @@
         <property id="timeWindow" type="number">60</property>
         <property id="startHour" type="number">7</property>
         <property id="endHour" type="number">21</property>
+        <property id="snoozeDuration" type="number">60</property>
     </properties>
 
     <settings>
@@ -22,6 +23,9 @@
         </setting>
         <setting propertyKey="@Properties.endHour" title="@Strings.endHourTitle">
             <settingConfig type="numeric" min="0" max="23" />
+        </setting>
+        <setting propertyKey="@Properties.snoozeDuration" title="@Strings.snoozeDurationTitle">
+            <settingConfig type="numeric" min="10" max="120" />
         </setting>
     </settings>
 </resources>

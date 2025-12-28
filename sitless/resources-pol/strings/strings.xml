@@ -13,6 +13,9 @@
     <string id="EndHourLabel">Godz. końca</string>
     <string id="On">Wł.</string>
     <string id="Off">Wył.</string>
+    <string id="snoozeDurationTitle">Czas uśpienia (min)</string>
+    <string id="SnoozeDurationLabel">Czas uśpienia</string>
+    <string id="SnoozedLabel">Uśpione</string>
     <string id="DailySteps">Dziennie</string>
     <string id="LastMinutes">ostatnie %d min</string>
     <string id="Samples">próbek</string>

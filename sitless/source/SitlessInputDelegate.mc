@@ -10,6 +10,15 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
         BehaviorDelegate.initialize();
     }
 
+    //! Handle select button press
+    //! Activates snooze mode
+    //! @return true if handled
+    function onSelect() as Boolean {
+        AlertManager.activateSnooze();
+        WatchUi.requestUpdate();
+        return true;
+    }
+
     //! Handle menu button press (long-press UP on most devices)
     //! Opens the settings menu
     //! @return true if handled
@@ -44,6 +53,12 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             WatchUi.loadResource(Rez.Strings.EndHourLabel) as String,
             formatHour(getEndHour()),
             :endHour,
+            {}
+        ));
+        menu.addItem(new WatchUi.MenuItem(
+            WatchUi.loadResource(Rez.Strings.SnoozeDurationLabel) as String,
+            getSnoozeDuration().toString() + " min",
+            :snoozeDuration,
             {}
         ));
         WatchUi.pushView(menu, new SitlessMenuDelegate(), WatchUi.SLIDE_UP);
@@ -123,5 +138,19 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
             System.println("SitLess: Error reading notificationsEnabled in delegate");
         }
         return true;
+    }
+
+    //! Read current snoozeDuration value from Properties
+    //! @return current snooze duration value in minutes
+    private function getSnoozeDuration() as Number {
+        try {
+            var value = Application.Properties.getValue("snoozeDuration");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading snoozeDuration in delegate");
+        }
+        return 60;
     }
 }

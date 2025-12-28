@@ -13,6 +13,7 @@ module SettingsManager {
     const DEFAULT_TIME_WINDOW = 60;
     const DEFAULT_START_HOUR = 7;
     const DEFAULT_END_HOUR = 21;
+    const DEFAULT_SNOOZE_DURATION = 60;
 
     //! Get notifications enabled setting
     //! @return true if notifications are enabled
@@ -61,6 +62,15 @@ module SettingsManager {
         var value = getNumberSetting("endHour", DEFAULT_END_HOUR);
         if (value < 0) { return 0; }
         if (value > 23) { return 23; }
+        return value;
+    }
+
+    //! Get snooze duration in minutes
+    //! @return snooze duration (10-120)
+    function getSnoozeDuration() as Number {
+        var value = getNumberSetting("snoozeDuration", DEFAULT_SNOOZE_DURATION);
+        if (value < 10) { return 10; }
+        if (value > 120) { return 120; }
         return value;
     }
 

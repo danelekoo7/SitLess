@@ -37,6 +37,8 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
             openStartHourPicker();
         } else if (id == :endHour) {
             openEndHourPicker();
+        } else if (id == :snoozeDuration) {
+            openSnoozeDurationPicker();
         }
     }
 
@@ -66,6 +68,27 @@ class SitlessMenuDelegate extends WatchUi.Menu2InputDelegate {
         var currentValue = getHourValue("endHour");
         var picker = new EndHourPicker(currentValue);
         WatchUi.pushView(picker, new HourPickerDelegate("endHour"), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Open a picker to select snooze duration value
+    private function openSnoozeDurationPicker() as Void {
+        var currentValue = getSnoozeDuration();
+        var picker = new SnoozeDurationPicker(currentValue);
+        WatchUi.pushView(picker, new SnoozeDurationPickerDelegate(), WatchUi.SLIDE_LEFT);
+    }
+
+    //! Read current snoozeDuration value from Properties
+    //! @return current snooze duration value in minutes
+    private function getSnoozeDuration() as Number {
+        try {
+            var value = Properties.getValue("snoozeDuration");
+            if (value != null && value instanceof Number) {
+                return value as Number;
+            }
+        } catch (e) {
+            System.println("SitLess: Error reading snoozeDuration in menu");
+        }
+        return 60;
     }
 
     //! Read current minSteps value from Properties
@@ -410,6 +433,71 @@ class HourPickerDelegate extends WatchUi.PickerDelegate {
             System.println("SitLess: " + _propertyKey + " set to " + value);
         } catch (e) {
             System.println("SitLess: Failed to save " + _propertyKey);
+        }
+
+        // Pop back to widget (picker + menu)
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+
+    //! Handle picker cancellation
+    //! @return true if handled
+    function onCancel() as Boolean {
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+//! Picker view for selecting snooze duration
+class SnoozeDurationPicker extends WatchUi.Picker {
+    //! Constructor
+    //! @param currentValue The current snooze duration value in minutes
+    function initialize(currentValue as Number) {
+        // Reuse StepGoalPickerFactory with range: 10-120, step 10
+        var factory = new StepGoalPickerFactory(10, 120, 10);
+        var defaultIndex = factory.getIndexForValue(currentValue);
+
+        var title = new WatchUi.Text({
+            :text => WatchUi.loadResource(Rez.Strings.SnoozeDurationLabel) as String,
+            :color => Graphics.COLOR_WHITE,
+            :font => Graphics.FONT_SMALL,
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => WatchUi.LAYOUT_VALIGN_BOTTOM
+        });
+
+        Picker.initialize({
+            :title => title,
+            :pattern => [factory] as Array<PickerFactory or Drawable>,
+            :defaults => [defaultIndex] as Array<Number>
+        });
+    }
+}
+
+//! Delegate for handling snooze duration picker selections
+class SnoozeDurationPickerDelegate extends WatchUi.PickerDelegate {
+
+    //! Constructor
+    function initialize() {
+        PickerDelegate.initialize();
+    }
+
+    //! Handle picker confirmation
+    //! @param values Array of selected values from each picker column
+    //! @return true if handled
+    function onAccept(values as Array) as Boolean {
+        var value = values[0] as Number;
+
+        // Validate range
+        if (value < 10) { value = 10; }
+        if (value > 120) { value = 120; }
+
+        // Save to properties
+        try {
+            Properties.setValue("snoozeDuration", value);
+            System.println("SitLess: Snooze duration set to " + value);
+        } catch (e) {
+            System.println("SitLess: Failed to save snooze duration");
         }
 
         // Pop back to widget (picker + menu)
