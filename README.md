@@ -12,7 +12,8 @@ This repository contains the Monkey C source code and resources for the app.
   - Time window length (default: 60 minutes)
   - Active hours (default: 07:00–21:00)
 - Discreet vibration alert and text prompt (e.g., "Time to move!")
-- Quick Snooze from the watch to delay the next alert by 10 minutes
+- Snooze toggle via SELECT button — delays alerts for configurable duration (default: 60 min); press again to cancel early
+- Visual snooze indicator near SELECT button (orange when active)
 - Smart exclusions — no alerts when:
   - Do Not Disturb (DND) is enabled
   - Sleep mode is active
@@ -23,7 +24,7 @@ This repository contains the Monkey C source code and resources for the app.
 
 ## How it works
 
-SitLess runs a periodic background task that keeps a small in‑memory buffer of step counts to estimate your steps within a rolling window (e.g., the past 60 minutes). If the steps in that window are below your configured minimum and you are within active hours, the app sends a gentle vibration alert. You can snooze directly on the watch to delay subsequent checks by 10 minutes.
+SitLess runs a periodic background task that keeps a small in‑memory buffer of step counts to estimate your steps within a rolling window (e.g., the past 60 minutes). If the steps in that window are below your configured minimum and you are within active hours, the app sends a gentle vibration alert. You can snooze directly on the watch (press SELECT) to delay subsequent alerts; press SELECT again to cancel snooze early.
 
 Notes and constraints:
 

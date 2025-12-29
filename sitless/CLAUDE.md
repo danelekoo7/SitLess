@@ -10,6 +10,7 @@ SitLess is a Garmin Connect IQ widget that provides gentle move reminders by mon
 **App Type:** Widget with Background Service and Glance View
 **Min API Level:** 3.2.0
 **Supported Languages:** English, Polish
+**Current Date:** End of 2025 (use this year for web searches)
 
 ## Project Documentation
 
@@ -61,7 +62,7 @@ This project uses the Visual Studio Code Connect IQ extension. Use the following
 - `source/SitlessInputDelegate.mc` - Input handling and settings menu access
 - `source/SitlessSettingsMenu.mc` - Settings menu delegates and pickers
 - `source/SettingsManager.mc` - Centralized settings access
-- `source/AlertManager.mc` - Alert decision logic (checks notifications, active hours, step threshold)
+- `source/AlertManager.mc` - Alert decision logic (checks notifications, active hours, step threshold) and snooze management (toggle, activate, deactivate)
 - `resources/settings/settings.xml` - Settings UI definition (properties + settings combined)
 
 **Planned Components** (not yet implemented):
@@ -261,12 +262,15 @@ Do NOT send alerts when:
 - Full visualization with progress bar or circular indicator
 - Display current steps in window vs. goal
 - Show time until next check or alert status
-- Snooze functionality (delay next alert by 10 minutes)
+- Snooze toggle functionality via SELECT button (press to activate/deactivate)
+- Visual snooze indicator near SELECT button position (arc + "zzz" text, orange when active, dark gray when inactive)
 
 **Input Handling:**
 - Design for button-only input (no touch assumed)
 - Use `WatchUi.InputDelegate` for handling button presses
 - Support physical buttons on all device types
+- SELECT button: Toggle snooze mode on/off
+- MENU button (long-press UP): Open settings menu
 
 **Visual Design:**
 - Dark theme by default (battery-friendly, AMOLED-safe)

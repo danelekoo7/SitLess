@@ -177,6 +177,15 @@ module AlertManager {
         return false;
     }
 
+    //! Toggles snooze mode - activates if off, deactivates if on
+    function toggleSnooze() as Void {
+        if (isInSnoozeMode()) {
+            deactivateSnooze();
+        } else {
+            activateSnooze();
+        }
+    }
+
     //! Activates snooze mode for the configured duration
     //! Saves the snooze end time to Storage
     function activateSnooze() as Void {
@@ -187,6 +196,16 @@ module AlertManager {
             System.println("SitLess: Snooze activated for " + durationMinutes + " minutes");
         } catch (e) {
             System.println("SitLess: Error saving snooze state");
+        }
+    }
+
+    //! Deactivates snooze mode
+    function deactivateSnooze() as Void {
+        try {
+            Storage.deleteValue("snoozeUntil");
+            System.println("SitLess: Snooze deactivated");
+        } catch (e) {
+            System.println("SitLess: Error clearing snooze state");
         }
     }
 

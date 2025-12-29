@@ -143,6 +143,33 @@ class sitlessView extends WatchUi.View {
             labelText,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
+
+        // 5. Snooze hint indicator near SELECT button (upper-right, ~30 degrees)
+        // Arc + small "zzz" text to indicate snooze functionality
+        // 0° = 3 o'clock, 90° = 12 o'clock, so 30° is near 2 o'clock (SELECT button position)
+        var hintColor = isSnoozeActive ? Graphics.COLOR_ORANGE : Graphics.COLOR_DK_GRAY;
+        dc.setColor(hintColor, Graphics.COLOR_TRANSPARENT);
+
+        // Draw small arc at the edge of screen near SELECT button
+        // Arc centered on screen, radius = half screen width, at ~30° position (2 o'clock)
+        var arcRadius = (screenWidth / 2) - 3;  // 3px from edge
+        dc.setPenWidth(3);
+        dc.drawArc(centerX, centerY, arcRadius, Graphics.ARC_COUNTER_CLOCKWISE, 20, 40);  // 20° arc around 30°
+        dc.setPenWidth(1);
+
+        // Small "zzz" text near the arc
+        // Position using polar coordinates: x = cx + r*cos(30°), y = cy - r*sin(30°)
+        // cos(30°) ≈ 0.866, sin(30°) ≈ 0.500
+        var textRadius = (screenWidth / 2) - 22;  // Inside the arc
+        var zzzX = centerX + (textRadius * 866 / 1000);   // cos(30°) * 1000 = 866
+        var zzzY = centerY - (textRadius * 500 / 1000);   // sin(30°) * 1000 = 500
+        dc.drawText(
+            zzzX,
+            zzzY,
+            Graphics.FONT_XTINY,
+            "zzz",
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
     }
 
     function onHide() as Void {

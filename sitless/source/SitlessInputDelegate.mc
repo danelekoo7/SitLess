@@ -11,10 +11,10 @@ class SitlessInputDelegate extends WatchUi.BehaviorDelegate {
     }
 
     //! Handle select button press
-    //! Activates snooze mode
+    //! Toggles snooze mode on/off
     //! @return true if handled
     function onSelect() as Boolean {
-        AlertManager.activateSnooze();
+        AlertManager.toggleSnooze();
         WatchUi.requestUpdate();
         return true;
     }

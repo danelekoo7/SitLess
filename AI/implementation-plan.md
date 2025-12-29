@@ -575,33 +575,53 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
 
 ---
 
-## Faza 6: Funkcja Snooze
+## Faza 6: Funkcja Snooze ✅ UKOŃCZONE
 
-### Krok 6.1: Obsługa przycisków
+### Krok 6.1: Obsługa przycisków ✅ UKOŃCZONE
 **Cel:** Reagowanie na input użytkownika
 
-**Nowy plik:** `source/SitlessInputDelegate.mc`
+**Plik:** `source/SitlessInputDelegate.mc`
 
-**Zadania:**
-1. Utwórz klasę dziedziczącą z `WatchUi.InputDelegate`
-2. Obsłuż `onKey()` - reakcja na przycisk Select
-3. Zarejestruj delegate w `getInitialView()`
-
-**Test weryfikacyjny:**
-- [ ] Naciśnięcie przycisku jest wykrywane
-- [ ] W logach widać info o naciśnięciu
-
-### Krok 6.2: Logika snooze
-**Cel:** Odkładanie alertów na 10 minut
-
-**Zadania:**
-1. Zapisz czas snooze w `Application.Storage`
-2. W `AlertManager.shouldAlert()` sprawdź czy jesteśmy w okresie snooze
-3. Po naciśnięciu Select ustaw snooze
+**Co zostało zrobione:**
+1. Klasa `SitlessInputDelegate` dziedzicząca z `WatchUi.BehaviorDelegate`
+2. Metoda `onSelect()` - obsługuje przycisk SELECT do toggle snooze
+3. Metoda `onMenu()` - obsługuje długie przytrzymanie UP do otwierania menu ustawień
+4. Delegate zarejestrowany w `getInitialView()`
 
 **Test weryfikacyjny:**
-- [ ] Po snooze alert nie pojawia się przez 10 minut
-- [ ] Po 10 minutach logika alertów wraca do normy
+- [x] Naciśnięcie SELECT jest wykrywane
+- [x] SELECT przełącza tryb snooze (włącza/wyłącza)
+
+### Krok 6.2: Logika snooze ✅ UKOŃCZONE
+**Cel:** Odkładanie alertów na konfigurowalny czas
+
+**Plik:** `source/AlertManager.mc`
+
+**Co zostało zrobione:**
+1. `isInSnoozeMode()` - sprawdza czy jesteśmy w okresie snooze
+2. `toggleSnooze()` - przełącza snooze (włącza jeśli wyłączony, wyłącza jeśli włączony)
+3. `activateSnooze()` - aktywuje snooze na czas z ustawień `snoozeDuration`
+4. `deactivateSnooze()` - dezaktywuje snooze (usuwa z Storage)
+5. `getSnoozeRemainingMinutes()` - zwraca pozostały czas snooze
+6. Czas snooze zapisywany w `Application.Storage` (klucz: `snoozeUntil`)
+7. `shouldAlert()` sprawdza czy jesteśmy w okresie snooze
+
+**Plik:** `source/sitlessView.mc`
+
+**Co zostało zrobione:**
+1. Wyświetlanie pozostałego czasu snooze zamiast standardowego statusu
+2. Wizualny wskaźnik snooze przy przycisku SELECT (łuk + "zzz"):
+   - Pomarańczowy gdy snooze jest aktywny
+   - Ciemnoszary gdy snooze jest nieaktywny
+3. Pozycja wskaźnika przy ~30° (pozycja przycisku SELECT na zegarku)
+
+**Ustawienie:** `snoozeDuration` - czas snooze w minutach (domyślnie: 60)
+
+**Test weryfikacyjny:**
+- [x] Po snooze alert nie pojawia się przez skonfigurowany czas
+- [x] Po upływie czasu logika alertów wraca do normy
+- [x] Ponowne naciśnięcie SELECT wyłącza snooze przed czasem
+- [x] Wizualny wskaźnik pokazuje status snooze
 
 ---
 
@@ -719,10 +739,10 @@ Faza 3: Ustawienia ✅
 Faza 5: Alerty ✅
     └── 5.1 ✅ → 5.2 ✅ → 5.3+5.4 ✅
 
-Faza 6: Snooze
-    └── 6.1 → 6.2
+Faza 6: Snooze ✅
+    └── 6.1 ✅ → 6.2 ✅
 
-Faza 7: Glance
+Faza 7: Glance ⏳
     └── 7.1 → 7.2
 
 Faza 8: Optymalizacje
@@ -743,8 +763,8 @@ Faza 9: Finalizacja
 | **CP3** | Faza 4 | Background service zbiera dane w tle | ✅ |
 | **CP4** | Faza 3 | Ustawienia działają i wpływają na aplikację | ✅ |
 | **CP5** | Faza 5 | Alerty wibracyjne działają | ✅ |
-| **CP6** | Faza 6 | Snooze działa | ⏳ NASTĘPNY |
-| **CP7** | Faza 7 | Glance view pokazuje status | |
+| **CP6** | Faza 6 | Snooze działa | ✅ |
+| **CP7** | Faza 7 | Glance view pokazuje status | ⏳ NASTĘPNY |
 | **CP8** | Faza 8 | Aplikacja jest zoptymalizowana | |
 | **CP9** | Faza 9 | Gotowe do publikacji | |
 
