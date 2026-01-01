@@ -33,13 +33,14 @@ Ustawienia dostępne z dwóch miejsc:
 
 Parametry konfiguracyjne:
 *   **Notifications enabled:** Włączenie/wyłączenie powiadomień wibracyjnych (domyślnie: ON). Gdy wyłączone, aplikacja działa tylko jako tracker kroków bez alertów — użytkownik może korzystać wyłącznie z podglądu danych.
-*   **Min. steps:** Minimalna ilość kroków (domyślnie: 50).
-*   **Time window:** Długość sprawdzanego okresu (domyślnie: 60 min).
-*   **Start/End Time:** Godziny aktywności powiadomień (domyślnie: 07:00 - 21:00).
+*   **Min. steps:** Minimalna ilość kroków (domyślnie: 50, zakres: 10-500, krok: 10).
+*   **Time window:** Długość sprawdzanego okresu (domyślnie: 60 min, zakres: 30-180 min, krok: 15).
+*   **Start/End Time:** Godziny aktywności powiadomień (domyślnie: 07:00 - 21:00, zakres: 0-23).
+*   **Snooze duration:** Czas drzemki (domyślnie: 60 min, zakres: 15-180 min, krok: 15).
 
 ### 3.3. Powiadomienia i Interakcja
 *   **Alert:** Wibracja (bez dźwięku) oraz komunikat tekstowy (np. "Time to move!").
-*   **Snooze:** Możliwość odłożenia powiadomienia o konfigurowalny czas (domyślnie 60 minut) poprzez naciśnięcie przycisku SELECT. Ponowne naciśnięcie SELECT wyłącza snooze przed czasem. Wizualny wskaźnik przy przycisku SELECT pokazuje status snooze.
+*   **Snooze:** Możliwość odłożenia powiadomienia o konfigurowalny czas (domyślnie 60 minut, zakres: 15-180 min, krok: 15) poprzez naciśnięcie przycisku SELECT. Ponowne naciśnięcie SELECT wyłącza snooze przed czasem. Wizualny wskaźnik przy przycisku SELECT pokazuje status snooze.
 *   **Logika wykluczeń:** Powiadomienie NIE może zostać wysłane, jeśli:
     *   Włączony jest tryb "Do Not Disturb" (DND).
     *   Wykryto, że użytkownik śpi (Sleep Mode).

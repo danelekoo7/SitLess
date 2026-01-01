@@ -264,8 +264,8 @@ class TimeWindowPicker extends WatchUi.Picker {
     //! Constructor
     //! @param currentValue The current time window value in minutes
     function initialize(currentValue as Number) {
-        // Reuse StepGoalPickerFactory with different range: 30-120, step 10
-        var factory = new StepGoalPickerFactory(30, 120, 10);
+        // Reuse StepGoalPickerFactory with different range: 30-180, step 15
+        var factory = new StepGoalPickerFactory(30, 180, 15);
         var defaultIndex = factory.getIndexForValue(currentValue);
 
         var title = new WatchUi.Text({
@@ -300,7 +300,7 @@ class TimeWindowPickerDelegate extends WatchUi.PickerDelegate {
 
         // Validate range
         if (value < 30) { value = 30; }
-        if (value > 120) { value = 120; }
+        if (value > 180) { value = 180; }
 
         // Save to properties
         try {
@@ -454,8 +454,8 @@ class SnoozeDurationPicker extends WatchUi.Picker {
     //! Constructor
     //! @param currentValue The current snooze duration value in minutes
     function initialize(currentValue as Number) {
-        // Reuse StepGoalPickerFactory with range: 10-120, step 10
-        var factory = new StepGoalPickerFactory(10, 120, 10);
+        // Reuse StepGoalPickerFactory with range: 15-180, step 15
+        var factory = new StepGoalPickerFactory(15, 180, 15);
         var defaultIndex = factory.getIndexForValue(currentValue);
 
         var title = new WatchUi.Text({
@@ -489,8 +489,8 @@ class SnoozeDurationPickerDelegate extends WatchUi.PickerDelegate {
         var value = values[0] as Number;
 
         // Validate range
-        if (value < 10) { value = 10; }
-        if (value > 120) { value = 120; }
+        if (value < 15) { value = 15; }
+        if (value > 180) { value = 180; }
 
         // Save to properties
         try {

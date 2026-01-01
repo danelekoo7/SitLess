@@ -39,11 +39,11 @@ module SettingsManager {
     }
 
     //! Get time window in minutes
-    //! @return time window value (30-120)
+    //! @return time window value (30-180)
     function getTimeWindow() as Number {
         var value = getNumberSetting("timeWindow", DEFAULT_TIME_WINDOW);
         if (value < 30) { return 30; }
-        if (value > 120) { return 120; }
+        if (value > 180) { return 180; }
         return value;
     }
 
@@ -66,11 +66,11 @@ module SettingsManager {
     }
 
     //! Get snooze duration in minutes
-    //! @return snooze duration (10-120)
+    //! @return snooze duration (15-180)
     function getSnoozeDuration() as Number {
         var value = getNumberSetting("snoozeDuration", DEFAULT_SNOOZE_DURATION);
-        if (value < 10) { return 10; }
-        if (value > 120) { return 120; }
+        if (value < 15) { return 15; }
+        if (value > 180) { return 180; }
         return value;
     }
 

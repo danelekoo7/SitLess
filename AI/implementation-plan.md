@@ -241,7 +241,7 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 
 **Co zostało zrobione:**
 1. `resources/settings/settings.xml` - dodano property `timeWindow` (domyślna wartość: 60)
-2. `resources/settings/settings.xml` - dodano setting z zakresem 30-120 minut
+2. `resources/settings/settings.xml` - dodano setting z zakresem 30-180 minut, krok 15
 3. `resources/strings/strings.xml` - dodano `timeWindowTitle`
 
 **Test weryfikacyjny:**
@@ -264,7 +264,7 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 
 **Test weryfikacyjny:**
 - [x] Menu na zegarku pokazuje dwie opcje: "Step Goal" i "Time Window"
-- [x] Picker Time Window pokazuje wartości 30-120 (krok 10)
+- [x] Picker Time Window pokazuje wartości 30-180 (krok 15)
 - [x] Zmiana wartości jest zapisywana i widoczna w widgecie
 
 ### Krok 3.4: Odczyt timeWindow w sitlessView ✅ UKOŃCZONE
@@ -370,9 +370,10 @@ return [new sitlessView(), new SitlessInputDelegate()] as [Views, InputDelegates
 **Cel:** Ochrona przed nieprawidłowymi wartościami
 
 Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
-- `getMinSteps()` - zakres 10-500
-- `getTimeWindow()` - zakres 30-120
+- `getMinSteps()` - zakres 10-500, krok 10
+- `getTimeWindow()` - zakres 30-180, krok 15
 - `getStartHour()` / `getEndHour()` - zakres 0-23
+- `getSnoozeDuration()` - zakres 15-180, krok 15
 
 ---
 
@@ -615,7 +616,7 @@ Walidacja zakresów została zaimplementowana w `SettingsManager.mc`:
    - Ciemnoszary gdy snooze jest nieaktywny
 3. Pozycja wskaźnika przy ~30° (pozycja przycisku SELECT na zegarku)
 
-**Ustawienie:** `snoozeDuration` - czas snooze w minutach (domyślnie: 60)
+**Ustawienie:** `snoozeDuration` - czas snooze w minutach (domyślnie: 60, zakres: 15-180, krok: 15)
 
 **Test weryfikacyjny:**
 - [x] Po snooze alert nie pojawia się przez skonfigurowany czas

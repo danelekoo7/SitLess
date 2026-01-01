@@ -109,10 +109,11 @@ Settings can be configured in two ways:
 
 Available settings:
 - `notificationsEnabled` - Enable/disable vibration alerts (default: true). When disabled, app works as step tracker only without alerts.
-- `minSteps` - Minimum steps per window (default: 50)
-- `timeWindow` - Rolling window in minutes (default: 60)
-- `startHour` - Active hours start (default: 7)
-- `endHour` - Active hours end (default: 21)
+- `minSteps` - Minimum steps per window (default: 50, range: 10-500, step: 10)
+- `timeWindow` - Rolling window in minutes (default: 60, range: 30-180, step: 15)
+- `startHour` - Active hours start (default: 7, range: 0-23)
+- `endHour` - Active hours end (default: 21, range: 0-23)
+- `snoozeDuration` - Snooze duration in minutes (default: 60, range: 15-180, step: 15)
 
 Access via `Toybox.Application.Properties`
 

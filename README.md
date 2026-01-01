@@ -8,9 +8,10 @@ This repository contains the Monkey C source code and resources for the app.
 
 - Background step monitoring in a rolling time window (e.g., last 60 minutes)
 - Configurable from the watch (long-press UP) or via Garmin Connect (mobile):
-  - Minimum steps target per window (default: 50)
-  - Time window length (default: 60 minutes)
+  - Minimum steps target per window (default: 50, range: 10-500, step: 10)
+  - Time window length (default: 60 minutes, range: 30-180 min, step: 15)
   - Active hours (default: 07:00–21:00)
+  - Snooze duration (default: 60 minutes, range: 15-180 min, step: 15)
 - Discreet vibration alert and text prompt (e.g., "Time to move!")
 - Snooze toggle via SELECT button — delays alerts for configurable duration (default: 60 min); press again to cancel early
 - Visual snooze indicator near SELECT button (orange when active)
@@ -48,9 +49,10 @@ Configuration is available in two ways:
 
 Available settings:
 - Notifications enabled (default: ON) — toggle vibration alerts on/off; when disabled, the app works as a step tracker only
-- Min. steps (default: 50)
-- Time window in minutes (default: 60)
+- Min. steps (default: 50, range: 10-500, step: 10)
+- Time window in minutes (default: 60, range: 30-180, step: 15)
 - Start/End time for active hours (default: 07:00–21:00)
+- Snooze duration in minutes (default: 60, range: 15-180, step: 15)
 
 ## Project structure
 
